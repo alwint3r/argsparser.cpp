@@ -8,8 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Include directories
 include_directories(include)
 
-# Create library
-add_library(argsparser src/argsparser.cpp)
+# Create library (header-only)
+add_library(argsparser INTERFACE)
+target_include_directories(argsparser INTERFACE include)
 
 # Create test executable
 add_executable(test_argsparser tests/test_argsparser.cpp)
@@ -23,11 +24,11 @@ add_executable(example examples/example.cpp)
 # Create C++23 example executable
 add_executable(cpp23_example examples/cpp23_example.cpp)
 
-# Link the library to the test and example
-target_link_libraries(test_argsparser argsparser)
-target_link_libraries(test_cpp23 argsparser)
-target_link_libraries(example argsparser)
-target_link_libraries(cpp23_example argsparser)
+# For header-only library, we only need to specify include directories
+target_include_directories(test_argsparser PRIVATE include)
+target_include_directories(test_cpp23 PRIVATE include)
+target_include_directories(example PRIVATE include)
+target_include_directories(cpp23_example PRIVATE include)
 
 # Set C++23 standard for the C++23 test executable
 target_compile_features(test_cpp23 PRIVATE cxx_std_23)
@@ -37,7 +38,7 @@ target_compile_features(cpp23_example PRIVATE cxx_std_23)
 
 # Compiler options
 if(MSVC)
-    target_compile_options(argsparser PRIVATE /W4)
+    add_compile_options(/W4)
 else()
-    target_compile_options(argsparser PRIVATE -Wall -Wextra -pedantic)
+    add_compile_options(-Wall -Wextra -pedantic)
 endif()

@@ -70,30 +70,39 @@ count->setValidator([](int value) { return value > 0; });
 
 ## Building
 
-To build the library and example:
+This is a header-only library, so there's no need to build the library separately. You can simply include the header file in your project:
+
+```cpp
+#include "argsparser.hpp"
+```
+
+However, to build and run the examples and tests, you can use the provided build script:
 
 ```bash
-mkdir build
-cd build
-cmake ..
-make
+./build.sh
+```
+
+This will:
+1. Compile and run the standard tests
+2. Compile and run the C++23 compatibility tests (if your compiler supports C++23)
+3. Build the example programs
+
+To clean up build artifacts:
+
+```bash
+./build.sh clean
 ```
 
 ## Running Tests
 
-```bash
-./test_argsparser
-```
-
-### C++23 Compatibility Tests
-
-The library also includes tests for C++23 compatibility:
+When you run `./build.sh`, it automatically runs the tests for you. However, if you want to run them manually, you can find the executables in the build directories:
 
 ```bash
-# Build with C++23 standard
-cmake .. -DCMAKE_CXX_STANDARD=23
-make
-./test_cpp23
+# For C++17 tests
+./build-cpp17/test_argsparser
+
+# For C++23 compatibility tests (if built)
+./build-cpp23/test_cpp23
 ```
 
 ## Running the Example
@@ -174,12 +183,10 @@ The library is also compatible with C++23. We provide specific tests and example
 To build and run the C++23 tests and examples:
 
 ```bash
-# Build with C++23 standard
-cmake .. -DCMAKE_CXX_STANDARD=23
-make
-./test_cpp23
-./cpp23_example --help
+./build.sh
 ```
+
+If your compiler supports C++23, the build script will automatically detect this and build the C++23 examples as well.
 
 ## Usage Example
 
