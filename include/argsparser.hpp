@@ -15,16 +15,16 @@ namespace argsparser {
  * @brief Error codes for argument parsing results
  */
 enum class ParseResult {
-  SUCCESS = 0,           ///< Parsing completed successfully
-  UNKNOWN_OPTION,        ///< An unknown option was provided
-  MISSING_VALUE,         ///< A required value is missing
-  INVALID_VALUE,         ///< A value is invalid (wrong type or failed validation)
-  HELP_REQUESTED         ///< Help was requested (-h or --help)
+  SUCCESS = 0,     ///< Parsing completed successfully
+  UNKNOWN_OPTION,  ///< An unknown option was provided
+  MISSING_VALUE,   ///< A required value is missing
+  INVALID_VALUE,   ///< A value is invalid (wrong type or failed validation)
+  HELP_REQUESTED   ///< Help was requested (-h or --help)
 };
 
 /**
  * @brief Base class for all argument types
- * 
+ *
  * This abstract class defines the interface for all argument types.
  * Each concrete argument type must implement these methods to handle
  * parsing, validation, and help display.
@@ -76,9 +76,10 @@ class ArgumentBase {
 
 /**
  * @brief Template class for typed arguments
- * 
- * This template class provides the base implementation for arguments of any type.
- * Specializations exist for specific types like std::string, bool, and int.
+ *
+ * This template class provides the base implementation for arguments of any
+ * type. Specializations exist for specific types like std::string, bool, and
+ * int.
  * @tparam T The type of value this argument holds
  */
 template <typename T>
@@ -86,7 +87,7 @@ class Argument : public ArgumentBase {
  public:
   /**
    * @brief Validator function type
-   * 
+   *
    * A validator is a function that takes a value of type T and returns
    * true if the value is valid, false otherwise.
    */
@@ -104,7 +105,7 @@ class Argument : public ArgumentBase {
  public:
   /**
    * @brief Construct a new Argument object
-   * 
+   *
    * @param name The long name of the argument (e.g., "verbose")
    * @param shortName The short name of the argument (e.g., "v")
    * @param description A description of the argument for help text
@@ -123,7 +124,7 @@ class Argument : public ArgumentBase {
 
   /**
    * @brief Set a validator function for this argument
-   * 
+   *
    * The validator function will be called during parsing to validate the value.
    * @param validator The validator function to use
    */
@@ -131,7 +132,7 @@ class Argument : public ArgumentBase {
 
   /**
    * @brief Parse a string value into this argument's type
-   * 
+   *
    * @param value The string value to parse
    * @return true if parsing and validation were successful, false otherwise
    */
@@ -150,7 +151,7 @@ class Argument : public ArgumentBase {
 
   /**
    * @brief Print help information for this argument
-   * 
+   *
    * @param os The output stream to print to
    */
   void printHelp(std::ostream& os) const override {
@@ -187,7 +188,7 @@ class Argument : public ArgumentBase {
 
   /**
    * @brief Get the parsed value of this argument
-   * 
+   *
    * @return const T& The parsed value
    */
   const T& getValue() const { return value_; }
@@ -195,7 +196,7 @@ class Argument : public ArgumentBase {
  private:
   /**
    * @brief Parse a string value into this argument's type (pure virtual)
-   * 
+   *
    * This method must be implemented by specializations to handle
    * type-specific parsing.
    * @param value The string value to parse
@@ -204,10 +205,9 @@ class Argument : public ArgumentBase {
   virtual bool parseValue(const std::string& value) = 0;
 };
 
-
 /**
  * @brief Specialization for string arguments
- * 
+ *
  * This specialization handles string arguments, which don't require
  * type conversion during parsing.
  */
@@ -216,7 +216,7 @@ class Argument<std::string> : public ArgumentBase {
  public:
   /**
    * @brief Validator function type for string arguments
-   * 
+   *
    * A validator is a function that takes a string value and returns
    * true if the value is valid, false otherwise.
    */
@@ -234,7 +234,7 @@ class Argument<std::string> : public ArgumentBase {
  public:
   /**
    * @brief Construct a new Argument object for string values
-   * 
+   *
    * @param name The long name of the argument (e.g., "input")
    * @param shortName The short name of the argument (e.g., "i")
    * @param description A description of the argument for help text
@@ -253,7 +253,7 @@ class Argument<std::string> : public ArgumentBase {
 
   /**
    * @brief Set a validator function for this argument
-   * 
+   *
    * The validator function will be called during parsing to validate the value.
    * @param validator The validator function to use
    */
@@ -261,7 +261,7 @@ class Argument<std::string> : public ArgumentBase {
 
   /**
    * @brief Parse a string value for this argument
-   * 
+   *
    * For string arguments, parsing is trivial - we just assign the value.
    * @param value The string value to parse
    * @return true if validation was successful, false otherwise
@@ -278,7 +278,7 @@ class Argument<std::string> : public ArgumentBase {
 
   /**
    * @brief Print help information for this string argument
-   * 
+   *
    * @param os The output stream to print to
    */
   void printHelp(std::ostream& os) const override {
@@ -319,7 +319,7 @@ class Argument<std::string> : public ArgumentBase {
 
   /**
    * @brief Get the parsed value of this argument
-   * 
+   *
    * @return const std::string& The parsed value
    */
   const std::string& getValue() const { return value_; }
@@ -327,7 +327,7 @@ class Argument<std::string> : public ArgumentBase {
  private:
   /**
    * @brief Parse a string value (trivial implementation)
-   * 
+   *
    * @param value The string value to parse
    * @return true always (parsing strings never fails)
    */
@@ -339,7 +339,7 @@ class Argument<std::string> : public ArgumentBase {
 
 /**
  * @brief Specialization for boolean arguments (flags)
- * 
+ *
  * This specialization handles boolean arguments, which are treated as flags.
  * Flags don't take values; their presence sets them to true.
  */
@@ -355,11 +355,12 @@ class Argument<bool> : public ArgumentBase {
  public:
   /**
    * @brief Construct a new Argument object for boolean values (flags)
-   * 
+   *
    * @param name The long name of the argument (e.g., "verbose")
    * @param shortName The short name of the argument (e.g., "v")
    * @param description A description of the argument for help text
-   * @param required Whether this argument is required (default: false, unused for flags)
+   * @param required Whether this argument is required (default: false, unused
+   * for flags)
    * @param defaultValue The default value for this argument (default: false)
    */
   Argument(const std::string& name, const std::string& shortName,
@@ -373,7 +374,7 @@ class Argument<bool> : public ArgumentBase {
 
   /**
    * @brief Parse a value for this boolean argument (flags)
-   * 
+   *
    * For flags, parsing just sets the value to true when the flag is present.
    * @param value The string value (ignored for flags)
    * @return true always (parsing flags never fails)
@@ -387,7 +388,7 @@ class Argument<bool> : public ArgumentBase {
 
   /**
    * @brief Print help information for this boolean argument
-   * 
+   *
    * @param os The output stream to print to
    */
   void printHelp(std::ostream& os) const override {
@@ -427,7 +428,7 @@ class Argument<bool> : public ArgumentBase {
 
   /**
    * @brief Get the parsed value of this argument
-   * 
+   *
    * @return bool The parsed value (true if flag was present)
    */
   bool getValue() const { return value_; }
@@ -435,7 +436,7 @@ class Argument<bool> : public ArgumentBase {
 
 /**
  * @brief Specialization for integer arguments
- * 
+ *
  * This specialization handles integer arguments, which require
  * conversion from string to int during parsing.
  */
@@ -444,7 +445,7 @@ class Argument<int> : public ArgumentBase {
  public:
   /**
    * @brief Validator function type for integer arguments
-   * 
+   *
    * A validator is a function that takes an integer value and returns
    * true if the value is valid, false otherwise.
    */
@@ -462,7 +463,7 @@ class Argument<int> : public ArgumentBase {
  public:
   /**
    * @brief Construct a new Argument object for integer values
-   * 
+   *
    * @param name The long name of the argument (e.g., "count")
    * @param shortName The short name of the argument (e.g., "c")
    * @param description A description of the argument for help text
@@ -481,7 +482,7 @@ class Argument<int> : public ArgumentBase {
 
   /**
    * @brief Set a validator function for this argument
-   * 
+   *
    * The validator function will be called during parsing to validate the value.
    * @param validator The validator function to use
    */
@@ -489,7 +490,7 @@ class Argument<int> : public ArgumentBase {
 
   /**
    * @brief Parse a string value into an integer
-   * 
+   *
    * @param value The string value to parse
    * @return true if parsing and validation were successful, false otherwise
    */
@@ -510,7 +511,7 @@ class Argument<int> : public ArgumentBase {
 
   /**
    * @brief Print help information for this integer argument
-   * 
+   *
    * @param os The output stream to print to
    */
   void printHelp(std::ostream& os) const override {
@@ -551,7 +552,7 @@ class Argument<int> : public ArgumentBase {
 
   /**
    * @brief Get the parsed value of this argument
-   * 
+   *
    * @return int The parsed value
    */
   int getValue() const { return value_; }
@@ -559,7 +560,7 @@ class Argument<int> : public ArgumentBase {
  private:
   /**
    * @brief Parse a string value into an integer
-   * 
+   *
    * @param value The string value to parse
    * @return true if parsing was successful, false otherwise
    */
@@ -575,7 +576,7 @@ class Argument<int> : public ArgumentBase {
 
 /**
  * @brief Main argument parser class
- * 
+ *
  * The Parser class is the primary interface for defining and parsing
  * command-line arguments. It manages a collection of arguments and
  * handles the parsing of command-line input.
@@ -591,7 +592,7 @@ class Parser {
  public:
   /**
    * @brief Construct a new Parser object
-   * 
+   *
    * @param programName The name of the program (used in help text)
    * @param description A description of the program (used in help text)
    */
@@ -600,7 +601,7 @@ class Parser {
 
   /**
    * @brief Add a new argument to the parser
-   * 
+   *
    * @tparam T The type of the argument (e.g., bool, std::string, int)
    * @param name The long name of the argument (e.g., "verbose")
    * @param shortName The short name of the argument (e.g., "v")
@@ -627,7 +628,7 @@ class Parser {
 
   /**
    * @brief Parse command-line arguments
-   * 
+   *
    * @param argc The number of command-line arguments
    * @param argv The array of command-line argument strings
    * @return ParseResult The result of the parsing operation
@@ -703,7 +704,7 @@ class Parser {
 
   /**
    * @brief Print help information for all arguments
-   * 
+   *
    * @param os The output stream to print to (default: std::cout)
    */
   void printHelp(std::ostream& os = std::cout) const {
@@ -722,7 +723,7 @@ class Parser {
 
   /**
    * @brief Check if an argument has been set
-   * 
+   *
    * @param name The name of the argument to check
    * @return true if the argument was provided, false otherwise
    */
@@ -736,7 +737,7 @@ class Parser {
 
   /**
    * @brief Get the parsed value of an argument
-   * 
+   *
    * @tparam T The type of the argument value
    * @param name The name of the argument
    * @return const T& The parsed value of the argument
