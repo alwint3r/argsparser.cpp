@@ -85,6 +85,17 @@ make
 ./test_argsparser
 ```
 
+### C++23 Compatibility Tests
+
+The library also includes tests for C++23 compatibility:
+
+```bash
+# Build with C++23 standard
+cmake .. -DCMAKE_CXX_STANDARD=23
+make
+./test_cpp23
+```
+
 ## Running the Example
 
 ```bash
@@ -101,6 +112,17 @@ For help:
 
 ```bash
 ./example --help
+```
+
+### C++23 Example
+
+If your compiler supports C++23, you can also try the C++23 example:
+
+```bash
+# Build with C++23 standard
+cmake .. -DCMAKE_CXX_STANDARD=23
+make
+./cpp23_example --input data.in --output data.out --iterations 10 --verbose
 ```
 
 ## Integration
@@ -139,6 +161,24 @@ or with CMake:
 ```cmake
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+```
+
+## C++23 Compatibility
+
+The library is also compatible with C++23. We provide specific tests and examples that demonstrate:
+
+1. Designated initializers (C++20/23 feature)
+2. Compatibility with standard library algorithms
+3. Use with modern C++ features
+
+To build and run the C++23 tests and examples:
+
+```bash
+# Build with C++23 standard
+cmake .. -DCMAKE_CXX_STANDARD=23
+make
+./test_cpp23
+./cpp23_example --help
 ```
 
 ## Usage Example
@@ -187,4 +227,3 @@ This library follows the design principles outlined in QWEN.md:
 5. **No dynamic allocation**: Minimizes use of dynamic memory allocation
 6. **No exceptions**: Uses error codes instead of exceptions
 7. **Modern C++**: Leverages C++17 features where appropriate
-```
