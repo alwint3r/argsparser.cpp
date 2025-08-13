@@ -356,16 +356,16 @@ class Argument<bool> : public ArgumentBase {
   /**
    * @brief Construct a new Argument object for boolean values (flags)
    *
-   * @param name The long name of the argument (e.g., "verbose")
-   * @param shortName The short name of the argument (e.g., "v")
-   * @param description A description of the argument for help text
-   * @param required Whether this argument is required (default: false, unused
-   * for flags)
-   * @param defaultValue The default value for this argument (default: false)
+   * @param name The long name of the argument (e.g., "--verbose")
+   * @param shortName The short name of the argument (e.g., "-v")
+   * @param description Description of the argument
+   * @param defaultValue Default value for the argument
+   * @param required Whether the argument is required (not typically used for
+   * flags)
    */
   Argument(const std::string& name, const std::string& shortName,
-           const std::string& description, bool required = false,
-           bool defaultValue = false)
+           const std::string& description, bool defaultValue,
+           [[maybe_unused]] bool required)
       : name_(name),
         shortName_(shortName),
         description_(description),
@@ -375,11 +375,10 @@ class Argument<bool> : public ArgumentBase {
   /**
    * @brief Parse a value for this boolean argument (flags)
    *
-   * For flags, parsing just sets the value to true when the flag is present.
-   * @param value The string value (ignored for flags)
-   * @return true always (parsing flags never fails)
+   * @param value The value to parse (ignored for boolean flags)
+   * @return true Always returns true for boolean flags
    */
-  bool parse(const std::string& value) override {
+  bool parse([[maybe_unused]] const std::string& value) override {
     // For flags, we just set to true when present
     value_ = true;
     isSet_ = true;
