@@ -28,7 +28,20 @@ run_tests() {
         if [ $? -eq 0 ]; then
             echo ""
             echo "Overflow tests passed!"
-            return 0
+            
+            echo ""
+            echo "Running floating point tests..."
+            ./test_float
+            
+            if [ $? -eq 0 ]; then
+                echo ""
+                echo "Floating point tests passed!"
+                return 0
+            else
+                echo ""
+                echo "Floating point tests failed!"
+                return 1
+            fi
         else
             echo ""
             echo "Overflow tests failed!"

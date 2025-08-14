@@ -18,12 +18,16 @@ add_executable(test_argsparser tests/test_argsparser.cpp)
 # Create test executable for overflow tests
 add_executable(test_overflow tests/test_overflow.cpp)
 
+# Create test executable for floating point tests
+add_executable(test_float tests/test_float.cpp)
+
 # Create example executable
 add_executable(example examples/example.cpp)
 
 # For header-only library, we only need to specify include directories
 target_include_directories(test_argsparser PRIVATE include)
 target_include_directories(test_overflow PRIVATE include)
+target_include_directories(test_float PRIVATE include)
 target_include_directories(example PRIVATE include)
 
 # Compiler options

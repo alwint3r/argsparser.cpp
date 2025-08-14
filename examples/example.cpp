@@ -17,6 +17,8 @@ int main(int argc, char* argv[]) {
       "output", "o", "Output file path", false, "output.txt");
   auto* count =
       parser.addArgument<int>("count", "c", "Number of iterations", false, 1);
+  auto* rate = parser.addArgument<float>("rate", "r", "Processing rate", false, 1.0f);
+  auto* precision = parser.addArgument<double>("precision", "p", "Calculation precision", false, 1e-6);
 
   // Add positional arguments
   auto* sourceFile = parser.addPositionalArgument<std::string>(
@@ -24,8 +26,10 @@ int main(int argc, char* argv[]) {
   auto* destFile = parser.addPositionalArgument<std::string>(
       "dest", "Destination file", false);
 
-  // Add a validator to ensure count is positive
+  // Add validators
   count->setValidator([](int value) { return value > 0; });
+  rate->setValidator([](float value) { return value > 0.0f; });
+  precision->setValidator([](double value) { return value > 0.0; });
 
   // Parse command line arguments
   auto result = parser.parse(argc, argv);
@@ -59,6 +63,8 @@ int main(int argc, char* argv[]) {
   std::cout << "Input file: " << inputFile->getValue() << "\n";
   std::cout << "Output file: " << outputFile->getValue() << "\n";
   std::cout << "Count: " << count->getValue() << "\n";
+  std::cout << "Rate: " << rate->getValue() << "\n";
+  std::cout << "Precision: " << precision->getValue() << "\n";
 
   if (parser.isSet("source")) {
     std::cout << "Source file: " << sourceFile->getValue() << "\n";

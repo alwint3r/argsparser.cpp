@@ -473,6 +473,220 @@ class Argument<int> : public ArgumentBase {
 };
 
 /**
+ * @brief Specialization for float arguments
+ *
+ * This specialization handles float arguments, which require
+ * conversion from string to float during parsing.
+ */
+template <>
+class Argument<float> : public ArgumentBase {
+ public:
+  /**
+   * @brief Validator function type for float arguments
+   *
+   * A validator is a function that takes a float value and returns
+   * true if the value is valid, false otherwise.
+   */
+  using Validator = std::function<bool(float)>;
+
+ private:
+  std::string shortName_;
+  float value_;
+  Validator validator_;
+
+ public:
+  /**
+   * @brief Construct a new Argument object for float values
+   *
+   * @param name The long name of the argument (e.g., "rate")
+   * @param shortName The short name of the argument (e.g., "r")
+   * @param description A description of the argument for help text
+   * @param required Whether this argument is required (default: false)
+   * @param defaultValue The default value for this argument (default: 0.0f)
+   */
+  Argument(const std::string& name, const std::string& shortName,
+           const std::string& description, bool required = false,
+           float defaultValue = 0.0f)
+      : ArgumentBase(name, description, required),
+        shortName_(shortName),
+        value_(defaultValue) {}
+
+  /**
+   * @brief Set a validator function for this argument
+   *
+   * The validator function will be called during parsing to validate the value.
+   * @param validator The validator function to use
+   */
+  void setValidator(const Validator& validator) { validator_ = validator; }
+
+  /**
+   * @brief Parse a string value into a float
+   *
+   * @param value The string value to parse
+   * @return true if parsing and validation were successful, false otherwise
+   */
+  bool parse(const std::string& value) override {
+    char* end;
+    errno = 0;  // Reset errno before calling strtof
+    float parsedValue = std::strtof(value.c_str(), &end);
+
+    // Check if the entire string was consumed
+    if (*end != '\0') {
+      return false;
+    }
+
+    // Check for overflow/underflow (strtof sets errno to ERANGE)
+    if (errno == ERANGE) {
+      return false;
+    }
+
+    value_ = parsedValue;
+
+    if (validator_ && !validator_(value_)) {
+      return false;
+    }
+
+    isSet_ = true;
+    return true;
+  }
+
+  /**
+   * @brief Print help information for this float argument
+   *
+   * @param os The output stream to print to
+   */
+  void printHelp(std::ostream& os) const override {
+    if (!shortName_.empty()) {
+      os << "  -" << shortName_ << ", --" << name_;
+    } else {
+      os << "  --" << name_;
+    }
+    if (isRequired_) {
+      os << " (required)";
+    }
+    os << "\n    " << description_ << " (float)";
+    if (value_ != 0.0f) {
+      os << " (default: " << value_ << ")";
+    }
+    os << "\n";
+  }
+
+  /**
+   * @brief Get the parsed value of this argument
+   *
+   * @return float The parsed value
+   */
+  float getValue() const { return value_; }
+};
+
+/**
+ * @brief Specialization for double arguments
+ *
+ * This specialization handles double arguments, which require
+ * conversion from string to double during parsing.
+ */
+template <>
+class Argument<double> : public ArgumentBase {
+ public:
+  /**
+   * @brief Validator function type for double arguments
+   *
+   * A validator is a function that takes a double value and returns
+   * true if the value is valid, false otherwise.
+   */
+  using Validator = std::function<bool(double)>;
+
+ private:
+  std::string shortName_;
+  double value_;
+  Validator validator_;
+
+ public:
+  /**
+   * @brief Construct a new Argument object for double values
+   *
+   * @param name The long name of the argument (e.g., "precision")
+   * @param shortName The short name of the argument (e.g., "p")
+   * @param description A description of the argument for help text
+   * @param required Whether this argument is required (default: false)
+   * @param defaultValue The default value for this argument (default: 0.0)
+   */
+  Argument(const std::string& name, const std::string& shortName,
+           const std::string& description, bool required = false,
+           double defaultValue = 0.0)
+      : ArgumentBase(name, description, required),
+        shortName_(shortName),
+        value_(defaultValue) {}
+
+  /**
+   * @brief Set a validator function for this argument
+   *
+   * The validator function will be called during parsing to validate the value.
+   * @param validator The validator function to use
+   */
+  void setValidator(const Validator& validator) { validator_ = validator; }
+
+  /**
+   * @brief Parse a string value into a double
+   *
+   * @param value The string value to parse
+   * @return true if parsing and validation were successful, false otherwise
+   */
+  bool parse(const std::string& value) override {
+    char* end;
+    errno = 0;  // Reset errno before calling strtod
+    double parsedValue = std::strtod(value.c_str(), &end);
+
+    // Check if the entire string was consumed
+    if (*end != '\0') {
+      return false;
+    }
+
+    // Check for overflow/underflow (strtod sets errno to ERANGE)
+    if (errno == ERANGE) {
+      return false;
+    }
+
+    value_ = parsedValue;
+
+    if (validator_ && !validator_(value_)) {
+      return false;
+    }
+
+    isSet_ = true;
+    return true;
+  }
+
+  /**
+   * @brief Print help information for this double argument
+   *
+   * @param os The output stream to print to
+   */
+  void printHelp(std::ostream& os) const override {
+    if (!shortName_.empty()) {
+      os << "  -" << shortName_ << ", --" << name_;
+    } else {
+      os << "  --" << name_;
+    }
+    if (isRequired_) {
+      os << " (required)";
+    }
+    os << "\n    " << description_ << " (double)";
+    if (value_ != 0.0) {
+      os << " (default: " << value_ << ")";
+    }
+    os << "\n";
+  }
+
+  /**
+   * @brief Get the parsed value of this argument
+   *
+   * @return double The parsed value
+   */
+  double getValue() const { return value_; }
+};
+
+/**
  * @brief Main argument parser class
  *
  * The Parser class is the primary interface for defining and parsing
