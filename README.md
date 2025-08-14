@@ -5,7 +5,7 @@ A simple, header-only command line argument parser library for modern C++ (C++17
 ## Features
 
 - Header-only library for easy integration
-- Support for various argument types (string, integer, boolean flags)
+- Support for various argument types (string, integer, floating point, boolean flags)
 - Required and optional arguments
 - Default values for arguments
 - Custom validators for arguments
@@ -41,6 +41,10 @@ int main(int argc, char* argv[]) {
     // Add an optional integer argument with default value
     auto* count = parser.addArgument<int>("count", "c", "Number of iterations", false, 1);
     
+    // Add floating point arguments
+    auto* rate = parser.addArgument<float>("rate", "r", "Processing rate", false, 1.0f);
+    auto* precision = parser.addArgument<double>("precision", "p", "Calculation precision", false, 1e-6);
+    
     // Add positional arguments
     auto* sourceFile = parser.addPositionalArgument<std::string>("source", "Source file to process");
     auto* destFile = parser.addPositionalArgument<std::string>("dest", "Destination file", false);
@@ -65,6 +69,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Input file: " << inputFile->getValue() << "\n";
     std::cout << "Output file: " << outputFile->getValue() << "\n";
     std::cout << "Count: " << count->getValue() << "\n";
+    std::cout << "Rate: " << rate->getValue() << "\n";
+    std::cout << "Precision: " << precision->getValue() << "\n";
     
     if (parser.isSet("source")) {
         std::cout << "Source file: " << sourceFile->getValue() << "\n";
@@ -83,6 +89,10 @@ int main(int argc, char* argv[]) {
 ```cpp
 // Add a validator to ensure count is positive
 count->setValidator([](int value) { return value > 0; });
+
+// Add validators for floating point values
+rate->setValidator([](float value) { return value > 0.0f; });
+precision->setValidator([](double value) { return value > 0.0 && value < 1.0; });
 ```
 
 ## Building
@@ -125,19 +135,19 @@ When you run `./build.sh`, it automatically runs the tests for you. However, if 
 ## Running the Example
 
 ```bash
-./example --input input.txt --output result.txt --count 5 --verbose --debug --quiet source.txt dest.txt
+./example --input input.txt --output result.txt --count 5 --rate 3.14 --precision 1e-6 --verbose --debug --quiet source.txt dest.txt
 ```
 
 Or using short options:
 
 ```bash
-./example -i input.txt -o result.txt -c 5 -vdq source.txt dest.txt
+./example -i input.txt -o result.txt -c 5 -r 2.5 -p 1e-12 -vdq source.txt dest.txt
 ```
 
 Or using the `--arg=value` syntax:
 
 ```bash
-./example --input=input.txt --output=result.txt --count=5 --verbose --debug --quiet source.txt dest.txt
+./example --input=input.txt --output=result.txt --count=5 --rate=1.618 --precision=1e-9 --verbose --debug --quiet source.txt dest.txt
 ```
 
 For help:
