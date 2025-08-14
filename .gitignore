@@ -11,3 +11,10 @@ Thumbs.db
 CMakeFiles
 *.a
 build-*/
+
+# Temporary test files
+*_manual
+*_test
+test_manual
+example_manual
+example_warnings
