@@ -11,6 +11,7 @@ A simple, header-only command line argument parser library for modern C++ (C++17
 - Custom validators for arguments
 - Automatic help generation
 - Error handling with detailed error codes
+- Support for `--arg=value` syntax
 - No dynamic memory allocation (except for standard library containers)
 - No exceptions (uses error codes instead)
 
@@ -115,6 +116,12 @@ Or using short options:
 
 ```bash
 ./example -i input.txt -o result.txt -c 5 -v
+```
+
+Or using the `--arg=value` syntax:
+
+```bash
+./example --input=input.txt --output=result.txt --count=5 --verbose
 ```
 
 For help:

@@ -104,6 +104,26 @@ void test_print_help() {
   std::cout << "test_print_help passed\n";
 }
 
+void test_equals_syntax() {
+  argsparser::Parser parser("test_app", "A test application");
+  auto* inputFile = parser.addArgument<std::string>("input", "i", "Input file path", true);
+  auto* count = parser.addArgument<int>("count", "c", "Number of iterations", false, 10);
+
+  const char* argv[] = {"test_app", "--input=test.txt", "--count=5"};
+  int argc = sizeof(argv) / sizeof(argv[0]);
+
+  auto result = parser.parse(argc, const_cast<char**>(argv));
+  assert(result == argsparser::ParseResult::SUCCESS);
+
+  assert(parser.isSet("input"));
+  assert(parser.isSet("count"));
+
+  assert(inputFile->getValue() == "test.txt");
+  assert(count->getValue() == 5);
+
+  std::cout << "test_equals_syntax passed\n";
+}
+
 int main() {
   test_basic_parsing();
   test_help_request();
@@ -111,6 +131,7 @@ int main() {
   test_invalid_value();
   test_validator();
   test_print_help();
+  test_equals_syntax();
 
   std::cout << "All tests passed!\n";
   return 0;

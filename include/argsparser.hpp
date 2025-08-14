@@ -532,9 +532,28 @@ class Parser {
         continue;
       }
 
-      // Remove leading dashes
+      // Handle --option=value syntax
+      std::string name;
+      std::string value;
+      bool hasValue = false;
       bool isLong = (arg.length() > 1 && arg[1] == '-');
-      std::string name = isLong ? arg.substr(2) : arg.substr(1);
+      
+      if (isLong) {
+        // Long option
+        size_t equalPos = arg.find('=');
+        if (equalPos != std::string::npos) {
+          // --option=value format
+          name = arg.substr(2, equalPos - 2);
+          value = arg.substr(equalPos + 1);
+          hasValue = true;
+        } else {
+          // --option format
+          name = arg.substr(2);
+        }
+      } else {
+        // Short option
+        name = arg.substr(1);
+      }
 
       // Find the argument
       ArgumentBase* argument = nullptr;
@@ -562,12 +581,15 @@ class Parser {
         continue;
       }
 
-      // For non-boolean arguments, expect a value
-      if (i + 1 >= argc) {
-        return ParseResult::MISSING_VALUE;
+      // For non-boolean arguments, get the value
+      if (!hasValue) {
+        // Expect a value from the next argument
+        if (i + 1 >= argc) {
+          return ParseResult::MISSING_VALUE;
+        }
+        value = argv[++i];
       }
 
-      std::string value = argv[++i];
       if (!argument->parse(value)) {
         return ParseResult::INVALID_VALUE;
       }
