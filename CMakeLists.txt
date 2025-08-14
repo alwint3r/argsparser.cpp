@@ -15,26 +15,16 @@ target_include_directories(argsparser INTERFACE include)
 # Create test executable
 add_executable(test_argsparser tests/test_argsparser.cpp)
 
-# Create C++23 compatibility test executable
-add_executable(test_cpp23 tests/test_cpp23.cpp)
+# Create test executable for overflow tests
+add_executable(test_overflow tests/test_overflow.cpp)
 
 # Create example executable
 add_executable(example examples/example.cpp)
 
-# Create C++23 example executable
-add_executable(cpp23_example examples/cpp23_example.cpp)
-
 # For header-only library, we only need to specify include directories
 target_include_directories(test_argsparser PRIVATE include)
-target_include_directories(test_cpp23 PRIVATE include)
+target_include_directories(test_overflow PRIVATE include)
 target_include_directories(example PRIVATE include)
-target_include_directories(cpp23_example PRIVATE include)
-
-# Set C++23 standard for the C++23 test executable
-target_compile_features(test_cpp23 PRIVATE cxx_std_23)
-
-# Set C++23 standard for the C++23 example executable
-target_compile_features(cpp23_example PRIVATE cxx_std_23)
 
 # Compiler options
 if(MSVC)

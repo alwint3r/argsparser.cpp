@@ -1,11 +1,13 @@
 #ifndef ARGSPARSER_HPP
 #define ARGSPARSER_HPP
 
+#include <cerrno>   // For errno
+#include <climits>  // For INT_MAX and INT_MIN
+#include <cstdlib>  // For atoi
 #include <functional>
 #include <iostream>
 #include <map>
 #include <memory>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -494,11 +496,21 @@ class Argument<int> : public ArgumentBase {
    * @return true if parsing and validation were successful, false otherwise
    */
   bool parse(const std::string& value) override {
-    try {
-      value_ = std::stoi(value);
-    } catch (const std::exception&) {
+    char* end;
+    errno = 0;  // Reset errno before calling strtol
+    long parsedValue = std::strtol(value.c_str(), &end, 10);
+
+    // Check if the entire string was consumed
+    if (*end != '\0') {
       return false;
     }
+
+    // Check for overflow/underflow
+    if (errno == ERANGE || parsedValue > INT_MAX || parsedValue < INT_MIN) {
+      return false;
+    }
+
+    value_ = static_cast<int>(parsedValue);
 
     if (validator_ && !validator_(value_)) {
       return false;
@@ -564,12 +576,22 @@ class Argument<int> : public ArgumentBase {
    * @return true if parsing was successful, false otherwise
    */
   bool parseValue(const std::string& value) {
-    try {
-      value_ = std::stoi(value);
-      return true;
-    } catch (const std::exception&) {
+    char* end;
+    errno = 0;  // Reset errno before calling strtol
+    long parsedValue = std::strtol(value.c_str(), &end, 10);
+
+    // Check if the entire string was consumed
+    if (*end != '\0') {
       return false;
     }
+
+    // Check for overflow/underflow
+    if (errno == ERANGE || parsedValue > INT_MAX || parsedValue < INT_MIN) {
+      return false;
+    }
+
+    value_ = static_cast<int>(parsedValue);
+    return true;
   }
 };
 
