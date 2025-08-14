@@ -4,6 +4,7 @@
 #include <cerrno>   // For errno
 #include <climits>  // For INT_MAX and INT_MIN
 #include <cstdlib>  // For atoi
+#include <cstdio>   // For snprintf
 #include <functional>
 #include <iostream>
 #include <map>
@@ -34,6 +35,7 @@ enum class ParseResult {
 class ArgumentBase {
  protected:
   std::string name_;
+  std::string shortName_;
   std::string description_;
   bool isSet_;
   bool isRequired_;
@@ -43,12 +45,14 @@ class ArgumentBase {
    * @brief Construct a new ArgumentBase object
    *
    * @param name The name of the argument
+   * @param shortName The short name of the argument
    * @param description The description of the argument
    * @param required Whether the argument is required
    */
-  ArgumentBase(const std::string& name, const std::string& description,
-               bool required)
+  ArgumentBase(const std::string& name, const std::string& shortName,
+               const std::string& description, bool required)
       : name_(name),
+        shortName_(shortName),
         description_(description),
         isSet_(false),
         isRequired_(required) {}
@@ -69,7 +73,7 @@ class ArgumentBase {
    * @brief Print help information for this argument
    * @param os The output stream to print to
    */
-  virtual void printHelp(std::ostream& os) const = 0;
+  virtual void printHelp(std::ostream& os) const;
 
   /**
    * @brief Check if this argument has been set
@@ -90,10 +94,35 @@ class ArgumentBase {
   const std::string& getName() const { return name_; }
 
   /**
+   * @brief Get the short name of this argument
+   * @return The argument's short name
+   */
+  const std::string& getShortName() const { return shortName_; }
+
+  /**
    * @brief Get the description of this argument
    * @return The argument's description
    */
   const std::string& getDescription() const { return description_; }
+
+ protected:
+  /**
+   * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
+   * @return The type name or empty string if no type name should be displayed
+   */
+  virtual std::string getTypeName() const { return ""; }
+
+  /**
+   * @brief Get the default value as a string
+   * @return String representation of the default value or empty string if no default
+   */
+  virtual std::string getDefaultString() const { return ""; }
+
+  /**
+   * @brief Check if the argument has a default value that should be displayed
+   * @return true if a default value should be shown, false otherwise
+   */
+  virtual bool hasDefaultValue() const { return false; }
 };
 
 /**
@@ -116,7 +145,6 @@ class Argument : public ArgumentBase {
   using Validator = std::function<bool(const T&)>;
 
  protected:
-  std::string shortName_;
   T value_;
   Validator validator_;
 
@@ -133,8 +161,7 @@ class Argument : public ArgumentBase {
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
            const T& defaultValue = T{})
-      : ArgumentBase(name, description, required),
-        shortName_(shortName),
+      : ArgumentBase(name, shortName, description, required),
         value_(defaultValue) {}
 
   /**
@@ -162,23 +189,6 @@ class Argument : public ArgumentBase {
 
     isSet_ = true;
     return true;
-  }
-
-  /**
-   * @brief Print help information for this argument
-   *
-   * @param os The output stream to print to
-   */
-  void printHelp(std::ostream& os) const override {
-    if (!shortName_.empty()) {
-      os << "  -" << shortName_ << ", --" << name_;
-    } else {
-      os << "  --" << name_;
-    }
-    if (isRequired_) {
-      os << " (required)";
-    }
-    os << "\n    " << description_ << "\n";
   }
 
   /**
@@ -218,7 +228,6 @@ class Argument<std::string> : public ArgumentBase {
   using Validator = std::function<bool(const std::string&)>;
 
  private:
-  std::string shortName_;
   std::string value_;
   Validator validator_;
 
@@ -235,8 +244,7 @@ class Argument<std::string> : public ArgumentBase {
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
            const std::string& defaultValue = "")
-      : ArgumentBase(name, description, required),
-        shortName_(shortName),
+      : ArgumentBase(name, shortName, description, required),
         value_(defaultValue) {}
 
   /**
@@ -265,32 +273,28 @@ class Argument<std::string> : public ArgumentBase {
   }
 
   /**
-   * @brief Print help information for this string argument
-   *
-   * @param os The output stream to print to
-   */
-  void printHelp(std::ostream& os) const override {
-    if (!shortName_.empty()) {
-      os << "  -" << shortName_ << ", --" << name_;
-    } else {
-      os << "  --" << name_;
-    }
-    if (isRequired_) {
-      os << " (required)";
-    }
-    os << "\n    " << description_;
-    if (!value_.empty()) {
-      os << " (default: " << value_ << ")";
-    }
-    os << "\n";
-  }
-
-  /**
    * @brief Get the parsed value of this argument
    *
    * @return const std::string& The parsed value
    */
   const std::string& getValue() const { return value_; }
+
+ protected:
+  /**
+   * @brief Get the default value as a string
+   * @return String representation of the default value or empty string if no default
+   */
+  std::string getDefaultString() const override {
+    return value_;
+  }
+
+  /**
+   * @brief Check if the argument has a default value that should be displayed
+   * @return true if a default value should be shown, false otherwise
+   */
+  bool hasDefaultValue() const override {
+    return !value_.empty();
+  }
 };
 
 /**
@@ -302,7 +306,6 @@ class Argument<std::string> : public ArgumentBase {
 template <>
 class Argument<bool> : public ArgumentBase {
  private:
-  std::string shortName_;
   bool value_;
 
  public:
@@ -319,8 +322,7 @@ class Argument<bool> : public ArgumentBase {
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool defaultValue,
            [[maybe_unused]] bool required)
-      : ArgumentBase(name, description, required),
-        shortName_(shortName),
+      : ArgumentBase(name, shortName, description, required),
         value_(defaultValue) {
     // Flags are never required
     isRequired_ = false;
@@ -340,29 +342,28 @@ class Argument<bool> : public ArgumentBase {
   }
 
   /**
-   * @brief Print help information for this boolean argument
-   *
-   * @param os The output stream to print to
-   */
-  void printHelp(std::ostream& os) const override {
-    if (!shortName_.empty()) {
-      os << "  -" << shortName_ << ", --" << name_;
-    } else {
-      os << "  --" << name_;
-    }
-    os << "\n    " << description_;
-    if (value_) {
-      os << " (default: true)";
-    }
-    os << "\n";
-  }
-
-  /**
    * @brief Get the parsed value of this argument
    *
    * @return bool The parsed value (true if flag was present)
    */
   bool getValue() const { return value_; }
+
+ protected:
+  /**
+   * @brief Get the default value as a string
+   * @return String representation of the default value or empty string if no default
+   */
+  std::string getDefaultString() const override {
+    return value_ ? "true" : "";
+  }
+
+  /**
+   * @brief Check if the argument has a default value that should be displayed
+   * @return true if a default value should be shown, false otherwise
+   */
+  bool hasDefaultValue() const override {
+    return value_;
+  }
 };
 
 /**
@@ -383,7 +384,6 @@ class Argument<int> : public ArgumentBase {
   using Validator = std::function<bool(int)>;
 
  private:
-  std::string shortName_;
   int value_;
   Validator validator_;
 
@@ -400,8 +400,7 @@ class Argument<int> : public ArgumentBase {
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
            int defaultValue = 0)
-      : ArgumentBase(name, description, required),
-        shortName_(shortName),
+      : ArgumentBase(name, shortName, description, required),
         value_(defaultValue) {}
 
   /**
@@ -444,32 +443,36 @@ class Argument<int> : public ArgumentBase {
   }
 
   /**
-   * @brief Print help information for this integer argument
-   *
-   * @param os The output stream to print to
-   */
-  void printHelp(std::ostream& os) const override {
-    if (!shortName_.empty()) {
-      os << "  -" << shortName_ << ", --" << name_;
-    } else {
-      os << "  --" << name_;
-    }
-    if (isRequired_) {
-      os << " (required)";
-    }
-    os << "\n    " << description_ << " (integer)";
-    if (value_ != 0) {
-      os << " (default: " << value_ << ")";
-    }
-    os << "\n";
-  }
-
-  /**
    * @brief Get the parsed value of this argument
    *
    * @return int The parsed value
    */
   int getValue() const { return value_; }
+
+ protected:
+  /**
+   * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
+   * @return The type name or empty string if no type name should be displayed
+   */
+  std::string getTypeName() const override {
+    return "(integer)";
+  }
+
+  /**
+   * @brief Get the default value as a string
+   * @return String representation of the default value or empty string if no default
+   */
+  std::string getDefaultString() const override {
+    return std::to_string(value_);
+  }
+
+  /**
+   * @brief Check if the argument has a default value that should be displayed
+   * @return true if a default value should be shown, false otherwise
+   */
+  bool hasDefaultValue() const override {
+    return value_ != 0;
+  }
 };
 
 /**
@@ -490,7 +493,6 @@ class Argument<float> : public ArgumentBase {
   using Validator = std::function<bool(float)>;
 
  private:
-  std::string shortName_;
   float value_;
   Validator validator_;
 
@@ -507,8 +509,7 @@ class Argument<float> : public ArgumentBase {
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
            float defaultValue = 0.0f)
-      : ArgumentBase(name, description, required),
-        shortName_(shortName),
+      : ArgumentBase(name, shortName, description, required),
         value_(defaultValue) {}
 
   /**
@@ -551,32 +552,51 @@ class Argument<float> : public ArgumentBase {
   }
 
   /**
-   * @brief Print help information for this float argument
-   *
-   * @param os The output stream to print to
-   */
-  void printHelp(std::ostream& os) const override {
-    if (!shortName_.empty()) {
-      os << "  -" << shortName_ << ", --" << name_;
-    } else {
-      os << "  --" << name_;
-    }
-    if (isRequired_) {
-      os << " (required)";
-    }
-    os << "\n    " << description_ << " (float)";
-    if (value_ != 0.0f) {
-      os << " (default: " << value_ << ")";
-    }
-    os << "\n";
-  }
-
-  /**
    * @brief Get the parsed value of this argument
    *
    * @return float The parsed value
    */
   float getValue() const { return value_; }
+
+ protected:
+  /**
+   * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
+   * @return The type name or empty string if no type name should be displayed
+   */
+  std::string getTypeName() const override {
+    return "(float)";
+  }
+
+  /**
+   * @brief Format a float value to a string without trailing zeros
+   * @param value The float value to format
+   * @return Formatted string representation
+   */
+  std::string formatFloat(float value) const {
+    char buffer[32];
+    int len = std::snprintf(buffer, sizeof(buffer), "%.6g", value);
+    if (len < 0 || static_cast<std::size_t>(len) >= sizeof(buffer)) {
+      // Fallback to scientific notation if buffer is too small
+      std::snprintf(buffer, sizeof(buffer), "%.6e", value);
+    }
+    return std::string(buffer);
+  }
+
+  /**
+   * @brief Get the default value as a string
+   * @return String representation of the default value or empty string if no default
+   */
+  std::string getDefaultString() const override {
+    return formatFloat(value_);
+  }
+
+  /**
+   * @brief Check if the argument has a default value that should be displayed
+   * @return true if a default value should be shown, false otherwise
+   */
+  bool hasDefaultValue() const override {
+    return value_ != 0.0f;
+  }
 };
 
 /**
@@ -597,7 +617,6 @@ class Argument<double> : public ArgumentBase {
   using Validator = std::function<bool(double)>;
 
  private:
-  std::string shortName_;
   double value_;
   Validator validator_;
 
@@ -614,8 +633,7 @@ class Argument<double> : public ArgumentBase {
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
            double defaultValue = 0.0)
-      : ArgumentBase(name, description, required),
-        shortName_(shortName),
+      : ArgumentBase(name, shortName, description, required),
         value_(defaultValue) {}
 
   /**
@@ -658,33 +676,83 @@ class Argument<double> : public ArgumentBase {
   }
 
   /**
-   * @brief Print help information for this double argument
-   *
-   * @param os The output stream to print to
-   */
-  void printHelp(std::ostream& os) const override {
-    if (!shortName_.empty()) {
-      os << "  -" << shortName_ << ", --" << name_;
-    } else {
-      os << "  --" << name_;
-    }
-    if (isRequired_) {
-      os << " (required)";
-    }
-    os << "\n    " << description_ << " (double)";
-    if (value_ != 0.0) {
-      os << " (default: " << value_ << ")";
-    }
-    os << "\n";
-  }
-
-  /**
    * @brief Get the parsed value of this argument
    *
    * @return double The parsed value
    */
   double getValue() const { return value_; }
+
+ protected:
+  /**
+   * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
+   * @return The type name or empty string if no type name should be displayed
+   */
+  std::string getTypeName() const override {
+    return "(double)";
+  }
+
+  /**
+   * @brief Format a double value to a string without trailing zeros
+   * @param value The double value to format
+   * @return Formatted string representation
+   */
+  std::string formatDouble(double value) const {
+    char buffer[32];
+    int len = std::snprintf(buffer, sizeof(buffer), "%.15g", value);
+    if (len < 0 || static_cast<std::size_t>(len) >= sizeof(buffer)) {
+      // Fallback to scientific notation if buffer is too small
+      std::snprintf(buffer, sizeof(buffer), "%.15e", value);
+    }
+    return std::string(buffer);
+  }
+
+  /**
+   * @brief Get the default value as a string
+   * @return String representation of the default value or empty string if no default
+   */
+  std::string getDefaultString() const override {
+    return formatDouble(value_);
+  }
+
+  /**
+   * @brief Check if the argument has a default value that should be displayed
+   * @return true if a default value should be shown, false otherwise
+   */
+  bool hasDefaultValue() const override {
+    return value_ != 0.0;
+  }
 };
+
+/**
+ * @brief Print help information for this argument
+ * @param os The output stream to print to
+ */
+inline void ArgumentBase::printHelp(std::ostream& os) const {
+  if (!shortName_.empty()) {
+    os << "  -" << shortName_ << ", --" << name_;
+  } else {
+    os << "  --" << name_;
+  }
+  if (isRequired_) {
+    os << " (required)";
+  }
+  os << "\n    " << description_;
+  
+  // Add type name if applicable
+  std::string typeName = getTypeName();
+  if (!typeName.empty()) {
+    os << " " << typeName;
+  }
+  
+  // Add default value if applicable
+  if (hasDefaultValue()) {
+    std::string defaultStr = getDefaultString();
+    if (!defaultStr.empty()) {
+      os << " (default: " << defaultStr << ")";
+    }
+  }
+  os << "\n";
+}
 
 /**
  * @brief Main argument parser class
