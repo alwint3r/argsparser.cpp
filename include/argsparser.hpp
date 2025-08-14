@@ -32,7 +32,23 @@ enum class ParseResult {
  * parsing, validation, and help display.
  */
 class ArgumentBase {
+ protected:
+  std::string name_;
+  std::string description_;
+  bool isSet_;
+  bool isRequired_;
+
  public:
+  /**
+   * @brief Construct a new ArgumentBase object
+   * 
+   * @param name The name of the argument
+   * @param description The description of the argument
+   * @param required Whether the argument is required
+   */
+  ArgumentBase(const std::string& name, const std::string& description, bool required)
+    : name_(name), description_(description), isSet_(false), isRequired_(required) {}
+
   /**
    * @brief Virtual destructor for proper cleanup
    */
@@ -55,25 +71,25 @@ class ArgumentBase {
    * @brief Check if this argument has been set
    * @return true if the argument was provided, false otherwise
    */
-  virtual bool isSet() const = 0;
+  bool isSet() const { return isSet_; }
 
   /**
    * @brief Check if this argument is required
    * @return true if the argument is required, false otherwise
    */
-  virtual bool isRequired() const = 0;
+  bool isRequired() const { return isRequired_; }
 
   /**
    * @brief Get the name of this argument
    * @return The argument's name
    */
-  virtual std::string getName() const = 0;
+  const std::string& getName() const { return name_; }
 
   /**
    * @brief Get the description of this argument
    * @return The argument's description
    */
-  virtual std::string getDescription() const = 0;
+  const std::string& getDescription() const { return description_; }
 };
 
 /**
@@ -95,13 +111,9 @@ class Argument : public ArgumentBase {
    */
   using Validator = std::function<bool(const T&)>;
 
- private:
-  std::string name_;
+ protected:
   std::string shortName_;
-  std::string description_;
   T value_;
-  bool isSet_;
-  bool isRequired_;
   Validator validator_;
 
  public:
@@ -117,12 +129,9 @@ class Argument : public ArgumentBase {
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
            const T& defaultValue = T{})
-      : name_(name),
+      : ArgumentBase(name, description, required),
         shortName_(shortName),
-        description_(description),
-        value_(defaultValue),
-        isSet_(false),
-        isRequired_(required) {}
+        value_(defaultValue) {}
 
   /**
    * @brief Set a validator function for this argument
@@ -165,30 +174,6 @@ class Argument : public ArgumentBase {
   }
 
   /**
-   * @brief Check if this argument has been set
-   * @return true if the argument was provided, false otherwise
-   */
-  bool isSet() const override { return isSet_; }
-
-  /**
-   * @brief Check if this argument is required
-   * @return true if the argument is required, false otherwise
-   */
-  bool isRequired() const override { return isRequired_; }
-
-  /**
-   * @brief Get the name of this argument
-   * @return The argument's name
-   */
-  std::string getName() const override { return name_; }
-
-  /**
-   * @brief Get the description of this argument
-   * @return The argument's description
-   */
-  std::string getDescription() const override { return description_; }
-
-  /**
    * @brief Get the parsed value of this argument
    *
    * @return const T& The parsed value
@@ -225,12 +210,8 @@ class Argument<std::string> : public ArgumentBase {
   using Validator = std::function<bool(const std::string&)>;
 
  private:
-  std::string name_;
   std::string shortName_;
-  std::string description_;
   std::string value_;
-  bool isSet_;
-  bool isRequired_;
   Validator validator_;
 
  public:
@@ -246,12 +227,9 @@ class Argument<std::string> : public ArgumentBase {
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
            const std::string& defaultValue = "")
-      : name_(name),
+      : ArgumentBase(name, description, required),
         shortName_(shortName),
-        description_(description),
-        value_(defaultValue),
-        isSet_(false),
-        isRequired_(required) {}
+        value_(defaultValue) {}
 
   /**
    * @brief Set a validator function for this argument
@@ -296,48 +274,13 @@ class Argument<std::string> : public ArgumentBase {
   }
 
   /**
-   * @brief Check if this argument has been set
-   * @return true if the argument was provided, false otherwise
-   */
-  bool isSet() const override { return isSet_; }
-
-  /**
-   * @brief Check if this argument is required
-   * @return true if the argument is required, false otherwise
-   */
-  bool isRequired() const override { return isRequired_; }
-
-  /**
-   * @brief Get the name of this argument
-   * @return The argument's name
-   */
-  std::string getName() const override { return name_; }
-
-  /**
-   * @brief Get the description of this argument
-   * @return The argument's description
-   */
-  std::string getDescription() const override { return description_; }
-
-  /**
    * @brief Get the parsed value of this argument
    *
    * @return const std::string& The parsed value
    */
   const std::string& getValue() const { return value_; }
-
- private:
-  /**
-   * @brief Parse a string value (trivial implementation)
-   *
-   * @param value The string value to parse
-   * @return true always (parsing strings never fails)
-   */
-  bool parseValue(const std::string& value) {
-    value_ = value;
-    return true;
-  }
 };
+
 
 /**
  * @brief Specialization for boolean arguments (flags)
@@ -348,11 +291,8 @@ class Argument<std::string> : public ArgumentBase {
 template <>
 class Argument<bool> : public ArgumentBase {
  private:
-  std::string name_;
   std::string shortName_;
-  std::string description_;
   bool value_;
-  bool isSet_;
 
  public:
   /**
@@ -368,11 +308,12 @@ class Argument<bool> : public ArgumentBase {
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool defaultValue,
            [[maybe_unused]] bool required)
-      : name_(name),
+      : ArgumentBase(name, description, required),
         shortName_(shortName),
-        description_(description),
-        value_(defaultValue),
-        isSet_(false) {}
+        value_(defaultValue) {
+    // Flags are never required
+    isRequired_ = false;
+  }
 
   /**
    * @brief Parse a value for this boolean argument (flags)
@@ -402,38 +343,13 @@ class Argument<bool> : public ArgumentBase {
   }
 
   /**
-   * @brief Check if this argument has been set
-   * @return true if the argument was provided, false otherwise
-   */
-  bool isSet() const override { return isSet_; }
-
-  /**
-   * @brief Check if this argument is required
-   * @return false always (flags are never required)
-   */
-  bool isRequired() const override {
-    return false;  // Flags are never required
-  }
-
-  /**
-   * @brief Get the name of this argument
-   * @return The argument's name
-   */
-  std::string getName() const override { return name_; }
-
-  /**
-   * @brief Get the description of this argument
-   * @return The argument's description
-   */
-  std::string getDescription() const override { return description_; }
-
-  /**
    * @brief Get the parsed value of this argument
    *
    * @return bool The parsed value (true if flag was present)
    */
   bool getValue() const { return value_; }
 };
+
 
 /**
  * @brief Specialization for integer arguments
@@ -453,12 +369,8 @@ class Argument<int> : public ArgumentBase {
   using Validator = std::function<bool(int)>;
 
  private:
-  std::string name_;
   std::string shortName_;
-  std::string description_;
   int value_;
-  bool isSet_;
-  bool isRequired_;
   Validator validator_;
 
  public:
@@ -474,12 +386,9 @@ class Argument<int> : public ArgumentBase {
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
            int defaultValue = 0)
-      : name_(name),
+      : ArgumentBase(name, description, required),
         shortName_(shortName),
-        description_(description),
-        value_(defaultValue),
-        isSet_(false),
-        isRequired_(required) {}
+        value_(defaultValue) {}
 
   /**
    * @brief Set a validator function for this argument
@@ -538,62 +447,13 @@ class Argument<int> : public ArgumentBase {
   }
 
   /**
-   * @brief Check if this argument has been set
-   * @return true if the argument was provided, false otherwise
-   */
-  bool isSet() const override { return isSet_; }
-
-  /**
-   * @brief Check if this argument is required
-   * @return true if the argument is required, false otherwise
-   */
-  bool isRequired() const override { return isRequired_; }
-
-  /**
-   * @brief Get the name of this argument
-   * @return The argument's name
-   */
-  std::string getName() const override { return name_; }
-
-  /**
-   * @brief Get the description of this argument
-   * @return The argument's description
-   */
-  std::string getDescription() const override { return description_; }
-
-  /**
    * @brief Get the parsed value of this argument
    *
    * @return int The parsed value
    */
   int getValue() const { return value_; }
-
- private:
-  /**
-   * @brief Parse a string value into an integer
-   *
-   * @param value The string value to parse
-   * @return true if parsing was successful, false otherwise
-   */
-  bool parseValue(const std::string& value) {
-    char* end;
-    errno = 0;  // Reset errno before calling strtol
-    long parsedValue = std::strtol(value.c_str(), &end, 10);
-
-    // Check if the entire string was consumed
-    if (*end != '\0') {
-      return false;
-    }
-
-    // Check for overflow/underflow
-    if (errno == ERANGE || parsedValue > INT_MAX || parsedValue < INT_MIN) {
-      return false;
-    }
-
-    value_ = static_cast<int>(parsedValue);
-    return true;
-  }
 };
+
 
 /**
  * @brief Main argument parser class
