@@ -26,11 +26,11 @@ This project does not use any test framework, a basic assertion function should 
 
 Examples are located in the `examples/` directory.
 
-## C++ Coding Principles for Embedded System (Target) & Simulation (Host)
+## C++ Coding Principles
 
 **Core Principle:** There's no hardware, only data. Focus on data transformations and interactions.
 
-**Library Design Considerations (for external consumers):**
+### Library Design Considerations (for external consumers)
 
 - **Testability & Simulation (Host Environment):**
     - All code, including hardware abstractions, MUST be designed for testability.
@@ -44,7 +44,7 @@ Examples are located in the `examples/` directory.
     - For C++ class declarations, particularly those abstracting hardware, modifications to the public interface (methods, signatures, member variables) are STRONGLY DISCOURAGED unless explicitly requested and justified.
     - Prioritize backward compatibility and minimize breaking changes. If a change is unavoidable, it must be clearly documented and communicated.
 
-**General C++ Best Practices (apply to both Target and Host):**
+### General C++ Best Practices (apply to both Target and Host)
 
 - **Resource Management (RAII for Non-Memory Resources):**
     - **Dynamic Memory Allocation is STRONGLY DISCOURAGED.** Avoid `new`, `delete`, `malloc`, `free`, and standard library containers that use dynamic allocation by default (e.g., `std::vector` without a custom allocator, `std::string` in its typical usage).
