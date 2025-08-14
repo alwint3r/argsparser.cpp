@@ -469,6 +469,7 @@ class Parser {
   std::vector<std::unique_ptr<ArgumentBase>> arguments_;
   std::map<std::string, ArgumentBase*> longNameMap_;
   std::map<std::string, ArgumentBase*> shortNameMap_;
+  std::string lastError_;
 
  public:
   /**
@@ -479,6 +480,15 @@ class Parser {
    */
   Parser(const std::string& programName, const std::string& description = "")
       : programName_(programName), description_(description) {}
+
+  /**
+   * @brief Get the last error message
+   * 
+   * @return const std::string& The last error message
+   */
+  const std::string& getLastError() const {
+    return lastError_;
+  }
 
   /**
    * @brief Add a new argument to the parser
@@ -515,6 +525,9 @@ class Parser {
    * @return ParseResult The result of the parsing operation
    */
   ParseResult parse(int argc, char* argv[]) {
+    // Clear the last error
+    lastError_.clear();
+    
     // Check for help flag first
     for (int i = 1; i < argc; ++i) {
       std::string arg = argv[i];
@@ -570,12 +583,14 @@ class Parser {
       }
 
       if (!argument) {
+        lastError_ = std::string("Unknown option: ") + (isLong ? "--" : "-") + name;
         return ParseResult::UNKNOWN_OPTION;
       }
 
       // Handle boolean flags (no value expected)
       if (dynamic_cast<Argument<bool>*>(argument)) {
         if (!argument->parse("true")) {
+          lastError_ = std::string("Invalid value for flag: ") + (isLong ? "--" : "-") + name;
           return ParseResult::INVALID_VALUE;
         }
         continue;
@@ -585,12 +600,14 @@ class Parser {
       if (!hasValue) {
         // Expect a value from the next argument
         if (i + 1 >= argc) {
+          lastError_ = std::string("Missing value for option: ") + (isLong ? "--" : "-") + name;
           return ParseResult::MISSING_VALUE;
         }
         value = argv[++i];
       }
 
       if (!argument->parse(value)) {
+        lastError_ = std::string("Invalid value for option: ") + (isLong ? "--" : "-") + name + " = " + value;
         return ParseResult::INVALID_VALUE;
       }
     }
@@ -598,6 +615,7 @@ class Parser {
     // Check required arguments
     for (const auto& arg : arguments_) {
       if (arg->isRequired() && !arg->isSet()) {
+        lastError_ = std::string("Missing required option: --") + arg->getName();
         return ParseResult::MISSING_VALUE;
       }
     }

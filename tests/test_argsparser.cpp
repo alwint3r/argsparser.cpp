@@ -44,17 +44,18 @@ void test_help_request() {
   std::cout << "test_help_request passed\n";
 }
 
-void test_missing_required_argument() {
+void test_missing_value() {
   argsparser::Parser parser("test_app", "A test application");
-  parser.addArgument<std::string>("input", "i", "Input file path", true);
+  parser.addArgument<std::string>("input", "i", "Input file path");
 
-  const char* argv[] = {"test_app"};
+  const char* argv[] = {"test_app", "--input"};
   int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::MISSING_VALUE);
+  assert(parser.getLastError() == "Missing value for option: --input");
 
-  std::cout << "test_missing_required_argument passed\n";
+  std::cout << "test_missing_value passed\n";
 }
 
 void test_invalid_value() {
@@ -66,6 +67,7 @@ void test_invalid_value() {
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::INVALID_VALUE);
+  assert(parser.getLastError() == "Invalid value for option: --count = not_a_number");
 
   std::cout << "test_invalid_value passed\n";
 }
@@ -104,6 +106,34 @@ void test_print_help() {
   std::cout << "test_print_help passed\n";
 }
 
+void test_unknown_option() {
+  argsparser::Parser parser("test_app", "A test application");
+  parser.addArgument<bool>("verbose", "v", "Enable verbose output");
+
+  const char* argv[] = {"test_app", "--unknown"};
+  int argc = sizeof(argv) / sizeof(argv[0]);
+
+  auto result = parser.parse(argc, const_cast<char**>(argv));
+  assert(result == argsparser::ParseResult::UNKNOWN_OPTION);
+  assert(parser.getLastError() == "Unknown option: --unknown");
+
+  std::cout << "test_unknown_option passed\n";
+}
+
+void test_missing_required_option() {
+  argsparser::Parser parser("test_app", "A test application");
+  parser.addArgument<std::string>("input", "i", "Input file path", true);
+
+  const char* argv[] = {"test_app"};
+  int argc = sizeof(argv) / sizeof(argv[0]);
+
+  auto result = parser.parse(argc, const_cast<char**>(argv));
+  assert(result == argsparser::ParseResult::MISSING_VALUE);
+  assert(parser.getLastError() == "Missing required option: --input");
+
+  std::cout << "test_missing_required_option passed\n";
+}
+
 void test_equals_syntax() {
   argsparser::Parser parser("test_app", "A test application");
   auto* inputFile = parser.addArgument<std::string>("input", "i", "Input file path", true);
@@ -127,10 +157,12 @@ void test_equals_syntax() {
 int main() {
   test_basic_parsing();
   test_help_request();
-  test_missing_required_argument();
+  test_missing_required_option();
+  test_missing_value();
   test_invalid_value();
   test_validator();
   test_print_help();
+  test_unknown_option();
   test_equals_syntax();
 
   std::cout << "All tests passed!\n";

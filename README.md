@@ -12,6 +12,7 @@ A simple, header-only command line argument parser library for modern C++ (C++17
 - Automatic help generation
 - Error handling with detailed error codes
 - Support for `--arg=value` syntax
+- Informative error messages
 - No dynamic memory allocation (except for standard library containers)
 - No exceptions (uses error codes instead)
 

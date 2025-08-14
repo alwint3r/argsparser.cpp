@@ -32,17 +32,17 @@ int main(int argc, char* argv[]) {
       break;
 
     case argsparser::ParseResult::UNKNOWN_OPTION:
-      std::cerr << "Error: Unknown option provided\n";
+      std::cerr << "Error: " << parser.getLastError() << "\n";
       parser.printHelp(std::cerr);
       return 1;
 
     case argsparser::ParseResult::MISSING_VALUE:
-      std::cerr << "Error: Missing required value\n";
+      std::cerr << "Error: " << parser.getLastError() << "\n";
       parser.printHelp(std::cerr);
       return 1;
 
     case argsparser::ParseResult::INVALID_VALUE:
-      std::cerr << "Error: Invalid value provided\n";
+      std::cerr << "Error: " << parser.getLastError() << "\n";
       parser.printHelp(std::cerr);
       return 1;
   }
