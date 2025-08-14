@@ -67,7 +67,8 @@ void test_invalid_value() {
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::INVALID_VALUE);
-  assert(parser.getLastError() == "Invalid value for option: --count = not_a_number");
+  assert(parser.getLastError() ==
+         "Invalid value for option: --count = not_a_number");
 
   std::cout << "test_invalid_value passed\n";
 }
@@ -136,8 +137,10 @@ void test_missing_required_option() {
 
 void test_equals_syntax() {
   argsparser::Parser parser("test_app", "A test application");
-  auto* inputFile = parser.addArgument<std::string>("input", "i", "Input file path", true);
-  auto* count = parser.addArgument<int>("count", "c", "Number of iterations", false, 10);
+  auto* inputFile =
+      parser.addArgument<std::string>("input", "i", "Input file path", true);
+  auto* count =
+      parser.addArgument<int>("count", "c", "Number of iterations", false, 10);
 
   const char* argv[] = {"test_app", "--input=test.txt", "--count=5"};
   int argc = sizeof(argv) / sizeof(argv[0]);
@@ -156,9 +159,12 @@ void test_equals_syntax() {
 
 void test_positional_arguments() {
   argsparser::Parser parser("test_app", "A test application");
-  auto* inputFile = parser.addPositionalArgument<std::string>("input", "Input file path");
-  auto* outputFile = parser.addPositionalArgument<std::string>("output", "Output file path", false, "default.out");
-  auto* count = parser.addArgument<int>("count", "c", "Number of iterations", false, 10);
+  auto* inputFile =
+      parser.addPositionalArgument<std::string>("input", "Input file path");
+  auto* outputFile = parser.addPositionalArgument<std::string>(
+      "output", "Output file path", false, "default.out");
+  auto* count =
+      parser.addArgument<int>("count", "c", "Number of iterations", false, 10);
 
   const char* argv[] = {"test_app", "input.txt", "output.txt", "--count=5"};
   int argc = sizeof(argv) / sizeof(argv[0]);
@@ -186,7 +192,8 @@ void test_missing_positional_argument() {
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::MISSING_VALUE);
-  assert(parser.getLastError() == "Missing required positional argument: input");
+  assert(parser.getLastError() ==
+         "Missing required positional argument: input");
 
   std::cout << "test_missing_positional_argument passed\n";
 }
@@ -207,10 +214,12 @@ void test_too_many_positional_arguments() {
 
 void test_grouped_short_options() {
   argsparser::Parser parser("test_app", "A test application");
-  auto* verbose = parser.addArgument<bool>("verbose", "v", "Enable verbose output");
+  auto* verbose =
+      parser.addArgument<bool>("verbose", "v", "Enable verbose output");
   auto* debug = parser.addArgument<bool>("debug", "d", "Enable debug output");
   auto* quiet = parser.addArgument<bool>("quiet", "q", "Suppress output");
-  auto* inputFile = parser.addArgument<std::string>("input", "i", "Input file path", true);
+  auto* inputFile =
+      parser.addArgument<std::string>("input", "i", "Input file path", true);
 
   const char* argv[] = {"test_app", "-vdq", "--input", "test.txt"};
   int argc = sizeof(argv) / sizeof(argv[0]);
@@ -233,9 +242,11 @@ void test_grouped_short_options() {
 
 void test_grouped_short_options_with_non_bool() {
   argsparser::Parser parser("test_app", "A test application");
-  auto* verbose = parser.addArgument<bool>("verbose", "v", "Enable verbose output");
+  auto* verbose =
+      parser.addArgument<bool>("verbose", "v", "Enable verbose output");
   auto* count = parser.addArgument<int>("count", "c", "Number of iterations");
-  auto* inputFile = parser.addArgument<std::string>("input", "i", "Input file path", true);
+  auto* inputFile =
+      parser.addArgument<std::string>("input", "i", "Input file path", true);
 
   // This should be treated as -c with value 123
   const char* argv[] = {"test_app", "-c123", "--input", "test.txt"};

@@ -9,10 +9,8 @@ int main(int argc, char* argv[]) {
   // Add arguments
   auto* verbose =
       parser.addArgument<bool>("verbose", "v", "Enable verbose output");
-  auto* debug =
-      parser.addArgument<bool>("debug", "d", "Enable debug output");
-  auto* quiet =
-      parser.addArgument<bool>("quiet", "q", "Suppress output");
+  auto* debug = parser.addArgument<bool>("debug", "d", "Enable debug output");
+  auto* quiet = parser.addArgument<bool>("quiet", "q", "Suppress output");
   auto* inputFile =
       parser.addArgument<std::string>("input", "i", "Input file path", true);
   auto* outputFile = parser.addArgument<std::string>(
@@ -21,8 +19,10 @@ int main(int argc, char* argv[]) {
       parser.addArgument<int>("count", "c", "Number of iterations", false, 1);
 
   // Add positional arguments
-  auto* sourceFile = parser.addPositionalArgument<std::string>("source", "Source file to process");
-  auto* destFile = parser.addPositionalArgument<std::string>("dest", "Destination file", false);
+  auto* sourceFile = parser.addPositionalArgument<std::string>(
+      "source", "Source file to process");
+  auto* destFile = parser.addPositionalArgument<std::string>(
+      "dest", "Destination file", false);
 
   // Add a validator to ensure count is positive
   count->setValidator([](int value) { return value > 0; });
@@ -59,11 +59,11 @@ int main(int argc, char* argv[]) {
   std::cout << "Input file: " << inputFile->getValue() << "\n";
   std::cout << "Output file: " << outputFile->getValue() << "\n";
   std::cout << "Count: " << count->getValue() << "\n";
-  
+
   if (parser.isSet("source")) {
     std::cout << "Source file: " << sourceFile->getValue() << "\n";
   }
-  
+
   if (parser.isSet("dest")) {
     std::cout << "Destination file: " << destFile->getValue() << "\n";
   }
@@ -71,11 +71,11 @@ int main(int argc, char* argv[]) {
   if (verbose->getValue()) {
     std::cout << "Verbose mode enabled\n";
   }
-  
+
   if (debug->getValue()) {
     std::cout << "Debug mode enabled\n";
   }
-  
+
   if (quiet->getValue()) {
     std::cout << "Quiet mode enabled\n";
   }

@@ -41,13 +41,17 @@ class ArgumentBase {
  public:
   /**
    * @brief Construct a new ArgumentBase object
-   * 
+   *
    * @param name The name of the argument
    * @param description The description of the argument
    * @param required Whether the argument is required
    */
-  ArgumentBase(const std::string& name, const std::string& description, bool required)
-    : name_(name), description_(description), isSet_(false), isRequired_(required) {}
+  ArgumentBase(const std::string& name, const std::string& description,
+               bool required)
+      : name_(name),
+        description_(description),
+        isSet_(false),
+        isRequired_(required) {}
 
   /**
    * @brief Virtual destructor for proper cleanup
@@ -289,7 +293,6 @@ class Argument<std::string> : public ArgumentBase {
   const std::string& getValue() const { return value_; }
 };
 
-
 /**
  * @brief Specialization for boolean arguments (flags)
  *
@@ -361,7 +364,6 @@ class Argument<bool> : public ArgumentBase {
    */
   bool getValue() const { return value_; }
 };
-
 
 /**
  * @brief Specialization for integer arguments
@@ -470,7 +472,6 @@ class Argument<int> : public ArgumentBase {
   int getValue() const { return value_; }
 };
 
-
 /**
  * @brief Main argument parser class
  *
@@ -500,12 +501,10 @@ class Parser {
 
   /**
    * @brief Get the last error message
-   * 
+   *
    * @return const std::string& The last error message
    */
-  const std::string& getLastError() const {
-    return lastError_;
-  }
+  const std::string& getLastError() const { return lastError_; }
 
   /**
    * @brief Add a new argument to the parser
@@ -547,8 +546,10 @@ class Parser {
   template <typename T>
   Argument<T>* addPositionalArgument(const std::string& name,
                                      const std::string& description,
-                                     bool required = true, const T& defaultValue = T{}) {
-    auto arg = std::make_unique<Argument<T>>(name, "", description, required, defaultValue);
+                                     bool required = true,
+                                     const T& defaultValue = T{}) {
+    auto arg = std::make_unique<Argument<T>>(name, "", description, required,
+                                             defaultValue);
     Argument<T>* ptr = arg.get();
     positionalArguments_.push_back(std::move(arg));
     return ptr;
@@ -564,7 +565,7 @@ class Parser {
   ParseResult parse(int argc, char* argv[]) {
     // Clear the last error
     lastError_.clear();
-    
+
     // Check for help flag first
     for (int i = 1; i < argc; ++i) {
       std::string arg = argv[i];
@@ -575,7 +576,7 @@ class Parser {
 
     // Collect non-option arguments for positional arguments
     std::vector<std::string> positionalValues;
-    
+
     // Parse arguments
     for (int i = 1; i < argc; ++i) {
       std::string arg = argv[i];
@@ -591,7 +592,7 @@ class Parser {
       std::string value;
       bool hasValue = false;
       bool isLong = (arg.length() > 1 && arg[1] == '-');
-      
+
       if (isLong) {
         // Long option
         size_t equalPos = arg.find('=');
@@ -606,14 +607,16 @@ class Parser {
         }
       } else {
         // Short option
-        // Check if this is a grouped short option (e.g., -abc) or a short option with a value (e.g., -c123)
+        // Check if this is a grouped short option (e.g., -abc) or a short
+        // option with a value (e.g., -c123)
         if (arg.length() > 2) {
           // Extract the first character as the short option name
           std::string firstChar = arg.substr(1, 1);
           auto it = shortNameMap_.find(firstChar);
-          
+
           // Check if the first character corresponds to a non-boolean argument
-          if (it != shortNameMap_.end() && !dynamic_cast<Argument<bool>*>(it->second)) {
+          if (it != shortNameMap_.end() &&
+              !dynamic_cast<Argument<bool>*>(it->second)) {
             // This is a short option with a value (e.g., -c123)
             name = firstChar;
             value = arg.substr(2);
@@ -624,27 +627,29 @@ class Parser {
             for (size_t j = 1; j < arg.length(); ++j) {
               std::string shortName(1, arg[j]);
               auto it = shortNameMap_.find(shortName);
-              if (it == shortNameMap_.end() || !dynamic_cast<Argument<bool>*>(it->second)) {
-                // If any character doesn't correspond to a boolean flag, 
+              if (it == shortNameMap_.end() ||
+                  !dynamic_cast<Argument<bool>*>(it->second)) {
+                // If any character doesn't correspond to a boolean flag,
                 // treat the whole thing as a single short option
                 isGrouped = false;
                 break;
               }
             }
-            
+
             if (isGrouped) {
               // Process each character as a separate boolean flag
               for (size_t j = 1; j < arg.length(); ++j) {
                 std::string shortName(1, arg[j]);
                 auto it = shortNameMap_.find(shortName);
                 ArgumentBase* argument = it->second;
-                
+
                 if (!argument->parse("true")) {
-                  lastError_ = std::string("Invalid value for flag: -") + shortName;
+                  lastError_ =
+                      std::string("Invalid value for flag: -") + shortName;
                   return ParseResult::INVALID_VALUE;
                 }
               }
-              continue; // Move to the next argument
+              continue;  // Move to the next argument
             } else {
               // Single short option
               name = arg.substr(1);
@@ -671,14 +676,16 @@ class Parser {
       }
 
       if (!argument) {
-        lastError_ = std::string("Unknown option: ") + (isLong ? "--" : "-") + name;
+        lastError_ =
+            std::string("Unknown option: ") + (isLong ? "--" : "-") + name;
         return ParseResult::UNKNOWN_OPTION;
       }
 
       // Handle boolean flags (no value expected)
       if (dynamic_cast<Argument<bool>*>(argument)) {
         if (!argument->parse("true")) {
-          lastError_ = std::string("Invalid value for flag: ") + (isLong ? "--" : "-") + name;
+          lastError_ = std::string("Invalid value for flag: ") +
+                       (isLong ? "--" : "-") + name;
           return ParseResult::INVALID_VALUE;
         }
         continue;
@@ -688,14 +695,16 @@ class Parser {
       if (!hasValue) {
         // Expect a value from the next argument
         if (i + 1 >= argc) {
-          lastError_ = std::string("Missing value for option: ") + (isLong ? "--" : "-") + name;
+          lastError_ = std::string("Missing value for option: ") +
+                       (isLong ? "--" : "-") + name;
           return ParseResult::MISSING_VALUE;
         }
         value = argv[++i];
       }
 
       if (!argument->parse(value)) {
-        lastError_ = std::string("Invalid value for option: ") + (isLong ? "--" : "-") + name + " = " + value;
+        lastError_ = std::string("Invalid value for option: ") +
+                     (isLong ? "--" : "-") + name + " = " + value;
         return ParseResult::INVALID_VALUE;
       }
     }
@@ -705,20 +714,22 @@ class Parser {
     for (const auto& arg : positionalArguments_) {
       if (positionalIndex >= positionalValues.size()) {
         if (arg->isRequired()) {
-          lastError_ = std::string("Missing required positional argument: ") + arg->getName();
+          lastError_ = std::string("Missing required positional argument: ") +
+                       arg->getName();
           return ParseResult::MISSING_VALUE;
         }
         // Use default value
         continue;
       }
-      
+
       if (!arg->parse(positionalValues[positionalIndex])) {
-        lastError_ = std::string("Invalid value for positional argument: ") + arg->getName() + " = " + positionalValues[positionalIndex];
+        lastError_ = std::string("Invalid value for positional argument: ") +
+                     arg->getName() + " = " + positionalValues[positionalIndex];
         return ParseResult::INVALID_VALUE;
       }
       ++positionalIndex;
     }
-    
+
     // Check if there are too many positional arguments
     if (positionalIndex < positionalValues.size()) {
       lastError_ = "Too many positional arguments";
@@ -728,7 +739,8 @@ class Parser {
     // Check required option arguments
     for (const auto& arg : arguments_) {
       if (arg->isRequired() && !arg->isSet()) {
-        lastError_ = std::string("Missing required option: --") + arg->getName();
+        lastError_ =
+            std::string("Missing required option: --") + arg->getName();
         return ParseResult::MISSING_VALUE;
       }
     }
@@ -743,13 +755,13 @@ class Parser {
    */
   void printHelp(std::ostream& os = std::cout) const {
     os << "Usage: " << programName_;
-    
+
     // Print options
     bool hasOptions = !arguments_.empty();
     if (hasOptions) {
       os << " [OPTIONS]";
     }
-    
+
     // Print positional arguments
     for (const auto& arg : positionalArguments_) {
       os << " ";
@@ -762,7 +774,7 @@ class Parser {
       }
     }
     os << "\n";
-    
+
     if (!description_.empty()) {
       os << description_ << "\n\n";
     }
@@ -800,14 +812,14 @@ class Parser {
     if (it != longNameMap_.end()) {
       return it->second->isSet();
     }
-    
+
     // Check positional arguments
     for (const auto& arg : positionalArguments_) {
       if (arg->getName() == name) {
         return arg->isSet();
       }
     }
-    
+
     return false;
   }
 
@@ -829,7 +841,7 @@ class Parser {
         return arg->getValue();
       }
     }
-    
+
     // Check positional arguments
     for (const auto& arg : positionalArguments_) {
       if (arg->getName() == name) {
@@ -840,7 +852,7 @@ class Parser {
         }
       }
     }
-    
+
     // This should not happen in correct usage
     static T defaultValue{};
     return defaultValue;
