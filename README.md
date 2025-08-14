@@ -14,6 +14,7 @@ A simple, header-only command line argument parser library for modern C++ (C++17
 - Support for `--arg=value` syntax
 - Informative error messages
 - Support for positional arguments
+- Support for grouped short options (e.g., `-abc`)
 - No dynamic memory allocation (except for standard library containers)
 - No exceptions (uses error codes instead)
 
@@ -123,19 +124,19 @@ When you run `./build.sh`, it automatically runs the tests for you. However, if 
 ## Running the Example
 
 ```bash
-./example --input input.txt --output result.txt --count 5 --verbose source.txt dest.txt
+./example --input input.txt --output result.txt --count 5 --verbose --debug --quiet source.txt dest.txt
 ```
 
 Or using short options:
 
 ```bash
-./example -i input.txt -o result.txt -c 5 -v source.txt dest.txt
+./example -i input.txt -o result.txt -c 5 -vdq source.txt dest.txt
 ```
 
 Or using the `--arg=value` syntax:
 
 ```bash
-./example --input=input.txt --output=result.txt --count=5 --verbose source.txt dest.txt
+./example --input=input.txt --output=result.txt --count=5 --verbose --debug --quiet source.txt dest.txt
 ```
 
 For help:

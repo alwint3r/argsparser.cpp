@@ -606,7 +606,54 @@ class Parser {
         }
       } else {
         // Short option
-        name = arg.substr(1);
+        // Check if this is a grouped short option (e.g., -abc) or a short option with a value (e.g., -c123)
+        if (arg.length() > 2) {
+          // Extract the first character as the short option name
+          std::string firstChar = arg.substr(1, 1);
+          auto it = shortNameMap_.find(firstChar);
+          
+          // Check if the first character corresponds to a non-boolean argument
+          if (it != shortNameMap_.end() && !dynamic_cast<Argument<bool>*>(it->second)) {
+            // This is a short option with a value (e.g., -c123)
+            name = firstChar;
+            value = arg.substr(2);
+            hasValue = true;
+          } else {
+            // This might be a grouped short option
+            bool isGrouped = true;
+            for (size_t j = 1; j < arg.length(); ++j) {
+              std::string shortName(1, arg[j]);
+              auto it = shortNameMap_.find(shortName);
+              if (it == shortNameMap_.end() || !dynamic_cast<Argument<bool>*>(it->second)) {
+                // If any character doesn't correspond to a boolean flag, 
+                // treat the whole thing as a single short option
+                isGrouped = false;
+                break;
+              }
+            }
+            
+            if (isGrouped) {
+              // Process each character as a separate boolean flag
+              for (size_t j = 1; j < arg.length(); ++j) {
+                std::string shortName(1, arg[j]);
+                auto it = shortNameMap_.find(shortName);
+                ArgumentBase* argument = it->second;
+                
+                if (!argument->parse("true")) {
+                  lastError_ = std::string("Invalid value for flag: -") + shortName;
+                  return ParseResult::INVALID_VALUE;
+                }
+              }
+              continue; // Move to the next argument
+            } else {
+              // Single short option
+              name = arg.substr(1);
+            }
+          }
+        } else {
+          // Single short option
+          name = arg.substr(1);
+        }
       }
 
       // Find the argument

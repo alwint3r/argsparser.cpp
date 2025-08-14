@@ -9,6 +9,10 @@ int main(int argc, char* argv[]) {
   // Add arguments
   auto* verbose =
       parser.addArgument<bool>("verbose", "v", "Enable verbose output");
+  auto* debug =
+      parser.addArgument<bool>("debug", "d", "Enable debug output");
+  auto* quiet =
+      parser.addArgument<bool>("quiet", "q", "Suppress output");
   auto* inputFile =
       parser.addArgument<std::string>("input", "i", "Input file path", true);
   auto* outputFile = parser.addArgument<std::string>(
@@ -66,6 +70,14 @@ int main(int argc, char* argv[]) {
 
   if (verbose->getValue()) {
     std::cout << "Verbose mode enabled\n";
+  }
+  
+  if (debug->getValue()) {
+    std::cout << "Debug mode enabled\n";
+  }
+  
+  if (quiet->getValue()) {
+    std::cout << "Quiet mode enabled\n";
   }
 
   // Actual application logic would go here

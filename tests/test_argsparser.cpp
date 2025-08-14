@@ -205,6 +205,54 @@ void test_too_many_positional_arguments() {
   std::cout << "test_too_many_positional_arguments passed\n";
 }
 
+void test_grouped_short_options() {
+  argsparser::Parser parser("test_app", "A test application");
+  auto* verbose = parser.addArgument<bool>("verbose", "v", "Enable verbose output");
+  auto* debug = parser.addArgument<bool>("debug", "d", "Enable debug output");
+  auto* quiet = parser.addArgument<bool>("quiet", "q", "Suppress output");
+  auto* inputFile = parser.addArgument<std::string>("input", "i", "Input file path", true);
+
+  const char* argv[] = {"test_app", "-vdq", "--input", "test.txt"};
+  int argc = sizeof(argv) / sizeof(argv[0]);
+
+  auto result = parser.parse(argc, const_cast<char**>(argv));
+  assert(result == argsparser::ParseResult::SUCCESS);
+
+  assert(parser.isSet("verbose"));
+  assert(parser.isSet("debug"));
+  assert(parser.isSet("quiet"));
+  assert(parser.isSet("input"));
+
+  assert(verbose->getValue() == true);
+  assert(debug->getValue() == true);
+  assert(quiet->getValue() == true);
+  assert(inputFile->getValue() == "test.txt");
+
+  std::cout << "test_grouped_short_options passed\n";
+}
+
+void test_grouped_short_options_with_non_bool() {
+  argsparser::Parser parser("test_app", "A test application");
+  auto* verbose = parser.addArgument<bool>("verbose", "v", "Enable verbose output");
+  auto* count = parser.addArgument<int>("count", "c", "Number of iterations");
+  auto* inputFile = parser.addArgument<std::string>("input", "i", "Input file path", true);
+
+  // This should be treated as -c with value 123
+  const char* argv[] = {"test_app", "-c123", "--input", "test.txt"};
+  int argc = sizeof(argv) / sizeof(argv[0]);
+
+  auto result = parser.parse(argc, const_cast<char**>(argv));
+  assert(result == argsparser::ParseResult::SUCCESS);
+
+  assert(parser.isSet("count"));
+  assert(parser.isSet("input"));
+
+  assert(count->getValue() == 123);
+  assert(inputFile->getValue() == "test.txt");
+
+  std::cout << "test_grouped_short_options_with_non_bool passed\n";
+}
+
 int main() {
   test_basic_parsing();
   test_help_request();
@@ -218,6 +266,8 @@ int main() {
   test_positional_arguments();
   test_missing_positional_argument();
   test_too_many_positional_arguments();
+  test_grouped_short_options();
+  test_grouped_short_options_with_non_bool();
 
   std::cout << "All tests passed!\n";
   return 0;
