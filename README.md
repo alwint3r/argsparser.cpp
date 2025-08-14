@@ -13,6 +13,7 @@ A simple, header-only command line argument parser library for modern C++ (C++17
 - Error handling with detailed error codes
 - Support for `--arg=value` syntax
 - Informative error messages
+- Support for positional arguments
 - No dynamic memory allocation (except for standard library containers)
 - No exceptions (uses error codes instead)
 
@@ -38,6 +39,10 @@ int main(int argc, char* argv[]) {
     // Add an optional integer argument with default value
     auto* count = parser.addArgument<int>("count", "c", "Number of iterations", false, 1);
     
+    // Add positional arguments
+    auto* sourceFile = parser.addPositionalArgument<std::string>("source", "Source file to process");
+    auto* destFile = parser.addPositionalArgument<std::string>("dest", "Destination file", false);
+    
     // Parse command line arguments
     auto result = parser.parse(argc, argv);
     
@@ -58,6 +63,14 @@ int main(int argc, char* argv[]) {
     std::cout << "Input file: " << inputFile->getValue() << "\n";
     std::cout << "Output file: " << outputFile->getValue() << "\n";
     std::cout << "Count: " << count->getValue() << "\n";
+    
+    if (parser.isSet("source")) {
+        std::cout << "Source file: " << sourceFile->getValue() << "\n";
+    }
+    
+    if (parser.isSet("dest")) {
+        std::cout << "Destination file: " << destFile->getValue() << "\n";
+    }
     
     return 0;
 }
@@ -110,19 +123,19 @@ When you run `./build.sh`, it automatically runs the tests for you. However, if 
 ## Running the Example
 
 ```bash
-./example --input input.txt --output result.txt --count 5 --verbose
+./example --input input.txt --output result.txt --count 5 --verbose source.txt dest.txt
 ```
 
 Or using short options:
 
 ```bash
-./example -i input.txt -o result.txt -c 5 -v
+./example -i input.txt -o result.txt -c 5 -v source.txt dest.txt
 ```
 
 Or using the `--arg=value` syntax:
 
 ```bash
-./example --input=input.txt --output=result.txt --count=5 --verbose
+./example --input=input.txt --output=result.txt --count=5 --verbose source.txt dest.txt
 ```
 
 For help:

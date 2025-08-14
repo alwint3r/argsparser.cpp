@@ -166,7 +166,11 @@ class Argument : public ArgumentBase {
    * @param os The output stream to print to
    */
   void printHelp(std::ostream& os) const override {
-    os << "  -" << shortName_ << ", --" << name_;
+    if (!shortName_.empty()) {
+      os << "  -" << shortName_ << ", --" << name_;
+    } else {
+      os << "  --" << name_;
+    }
     if (isRequired_) {
       os << " (required)";
     }
@@ -262,7 +266,11 @@ class Argument<std::string> : public ArgumentBase {
    * @param os The output stream to print to
    */
   void printHelp(std::ostream& os) const override {
-    os << "  -" << shortName_ << ", --" << name_;
+    if (!shortName_.empty()) {
+      os << "  -" << shortName_ << ", --" << name_;
+    } else {
+      os << "  --" << name_;
+    }
     if (isRequired_) {
       os << " (required)";
     }
@@ -334,7 +342,11 @@ class Argument<bool> : public ArgumentBase {
    * @param os The output stream to print to
    */
   void printHelp(std::ostream& os) const override {
-    os << "  -" << shortName_ << ", --" << name_;
+    if (!shortName_.empty()) {
+      os << "  -" << shortName_ << ", --" << name_;
+    } else {
+      os << "  --" << name_;
+    }
     os << "\n    " << description_;
     if (value_) {
       os << " (default: true)";
@@ -435,7 +447,11 @@ class Argument<int> : public ArgumentBase {
    * @param os The output stream to print to
    */
   void printHelp(std::ostream& os) const override {
-    os << "  -" << shortName_ << ", --" << name_;
+    if (!shortName_.empty()) {
+      os << "  -" << shortName_ << ", --" << name_;
+    } else {
+      os << "  --" << name_;
+    }
     if (isRequired_) {
       os << " (required)";
     }
@@ -469,6 +485,7 @@ class Parser {
   std::vector<std::unique_ptr<ArgumentBase>> arguments_;
   std::map<std::string, ArgumentBase*> longNameMap_;
   std::map<std::string, ArgumentBase*> shortNameMap_;
+  std::vector<std::unique_ptr<ArgumentBase>> positionalArguments_;
   std::string lastError_;
 
  public:
@@ -518,6 +535,26 @@ class Parser {
   }
 
   /**
+   * @brief Add a new positional argument to the parser
+   *
+   * @tparam T The type of the argument (e.g., std::string, int)
+   * @param name The name of the positional argument
+   * @param description A description of the argument for help text
+   * @param required Whether this argument is required (default: true)
+   * @param defaultValue The default value for this argument (default: T{})
+   * @return Argument<T>* Pointer to the created argument
+   */
+  template <typename T>
+  Argument<T>* addPositionalArgument(const std::string& name,
+                                     const std::string& description,
+                                     bool required = true, const T& defaultValue = T{}) {
+    auto arg = std::make_unique<Argument<T>>(name, "", description, required, defaultValue);
+    Argument<T>* ptr = arg.get();
+    positionalArguments_.push_back(std::move(arg));
+    return ptr;
+  }
+
+  /**
    * @brief Parse command-line arguments
    *
    * @param argc The number of command-line arguments
@@ -536,12 +573,16 @@ class Parser {
       }
     }
 
+    // Collect non-option arguments for positional arguments
+    std::vector<std::string> positionalValues;
+    
     // Parse arguments
     for (int i = 1; i < argc; ++i) {
       std::string arg = argv[i];
 
       if (arg.empty() || arg[0] != '-') {
-        // Positional argument - not supported in this simple implementation
+        // Positional argument
+        positionalValues.push_back(arg);
         continue;
       }
 
@@ -612,7 +653,32 @@ class Parser {
       }
     }
 
-    // Check required arguments
+    // Parse positional arguments
+    size_t positionalIndex = 0;
+    for (const auto& arg : positionalArguments_) {
+      if (positionalIndex >= positionalValues.size()) {
+        if (arg->isRequired()) {
+          lastError_ = std::string("Missing required positional argument: ") + arg->getName();
+          return ParseResult::MISSING_VALUE;
+        }
+        // Use default value
+        continue;
+      }
+      
+      if (!arg->parse(positionalValues[positionalIndex])) {
+        lastError_ = std::string("Invalid value for positional argument: ") + arg->getName() + " = " + positionalValues[positionalIndex];
+        return ParseResult::INVALID_VALUE;
+      }
+      ++positionalIndex;
+    }
+    
+    // Check if there are too many positional arguments
+    if (positionalIndex < positionalValues.size()) {
+      lastError_ = "Too many positional arguments";
+      return ParseResult::INVALID_VALUE;
+    }
+
+    // Check required option arguments
     for (const auto& arg : arguments_) {
       if (arg->isRequired() && !arg->isSet()) {
         lastError_ = std::string("Missing required option: --") + arg->getName();
@@ -629,14 +695,47 @@ class Parser {
    * @param os The output stream to print to (default: std::cout)
    */
   void printHelp(std::ostream& os = std::cout) const {
-    os << "Usage: " << programName_ << " [OPTIONS]\n";
+    os << "Usage: " << programName_;
+    
+    // Print options
+    bool hasOptions = !arguments_.empty();
+    if (hasOptions) {
+      os << " [OPTIONS]";
+    }
+    
+    // Print positional arguments
+    for (const auto& arg : positionalArguments_) {
+      os << " ";
+      if (!arg->isRequired()) {
+        os << "[";
+      }
+      os << "<" << arg->getName() << ">";
+      if (!arg->isRequired()) {
+        os << "]";
+      }
+    }
+    os << "\n";
+    
     if (!description_.empty()) {
       os << description_ << "\n\n";
     }
 
-    os << "Options:\n";
-    for (const auto& arg : arguments_) {
-      arg->printHelp(os);
+    // Print option arguments
+    if (hasOptions) {
+      os << "Options:\n";
+      for (const auto& arg : arguments_) {
+        arg->printHelp(os);
+      }
+      os << "\n";
+    }
+
+    // Print positional arguments
+    if (!positionalArguments_.empty()) {
+      os << "Positional arguments:\n";
+      for (const auto& arg : positionalArguments_) {
+        arg->printHelp(os);
+      }
+      os << "\n";
     }
 
     os << "  -h, --help\n    Show this help message\n";
@@ -649,10 +748,19 @@ class Parser {
    * @return true if the argument was provided, false otherwise
    */
   bool isSet(const std::string& name) const {
+    // Check option arguments first
     auto it = longNameMap_.find(name);
     if (it != longNameMap_.end()) {
       return it->second->isSet();
     }
+    
+    // Check positional arguments
+    for (const auto& arg : positionalArguments_) {
+      if (arg->getName() == name) {
+        return arg->isSet();
+      }
+    }
+    
     return false;
   }
 
@@ -665,6 +773,7 @@ class Parser {
    */
   template <typename T>
   const T& getValue(const std::string& name) const {
+    // Check option arguments first
     auto it = longNameMap_.find(name);
     if (it != longNameMap_.end()) {
       // This is safe because we know the type matches
@@ -673,6 +782,18 @@ class Parser {
         return arg->getValue();
       }
     }
+    
+    // Check positional arguments
+    for (const auto& arg : positionalArguments_) {
+      if (arg->getName() == name) {
+        // This is safe because we know the type matches
+        auto* posArg = dynamic_cast<Argument<T>*>(arg.get());
+        if (posArg) {
+          return posArg->getValue();
+        }
+      }
+    }
+    
     // This should not happen in correct usage
     static T defaultValue{};
     return defaultValue;

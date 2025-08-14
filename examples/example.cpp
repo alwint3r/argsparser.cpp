@@ -16,6 +16,10 @@ int main(int argc, char* argv[]) {
   auto* count =
       parser.addArgument<int>("count", "c", "Number of iterations", false, 1);
 
+  // Add positional arguments
+  auto* sourceFile = parser.addPositionalArgument<std::string>("source", "Source file to process");
+  auto* destFile = parser.addPositionalArgument<std::string>("dest", "Destination file", false);
+
   // Add a validator to ensure count is positive
   count->setValidator([](int value) { return value > 0; });
 
@@ -51,6 +55,14 @@ int main(int argc, char* argv[]) {
   std::cout << "Input file: " << inputFile->getValue() << "\n";
   std::cout << "Output file: " << outputFile->getValue() << "\n";
   std::cout << "Count: " << count->getValue() << "\n";
+  
+  if (parser.isSet("source")) {
+    std::cout << "Source file: " << sourceFile->getValue() << "\n";
+  }
+  
+  if (parser.isSet("dest")) {
+    std::cout << "Destination file: " << destFile->getValue() << "\n";
+  }
 
   if (verbose->getValue()) {
     std::cout << "Verbose mode enabled\n";

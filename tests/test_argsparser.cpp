@@ -154,6 +154,57 @@ void test_equals_syntax() {
   std::cout << "test_equals_syntax passed\n";
 }
 
+void test_positional_arguments() {
+  argsparser::Parser parser("test_app", "A test application");
+  auto* inputFile = parser.addPositionalArgument<std::string>("input", "Input file path");
+  auto* outputFile = parser.addPositionalArgument<std::string>("output", "Output file path", false, "default.out");
+  auto* count = parser.addArgument<int>("count", "c", "Number of iterations", false, 10);
+
+  const char* argv[] = {"test_app", "input.txt", "output.txt", "--count=5"};
+  int argc = sizeof(argv) / sizeof(argv[0]);
+
+  auto result = parser.parse(argc, const_cast<char**>(argv));
+  assert(result == argsparser::ParseResult::SUCCESS);
+
+  assert(parser.isSet("input"));
+  assert(parser.isSet("output"));
+  assert(parser.isSet("count"));
+
+  assert(inputFile->getValue() == "input.txt");
+  assert(outputFile->getValue() == "output.txt");
+  assert(count->getValue() == 5);
+
+  std::cout << "test_positional_arguments passed\n";
+}
+
+void test_missing_positional_argument() {
+  argsparser::Parser parser("test_app", "A test application");
+  parser.addPositionalArgument<std::string>("input", "Input file path");
+
+  const char* argv[] = {"test_app"};
+  int argc = sizeof(argv) / sizeof(argv[0]);
+
+  auto result = parser.parse(argc, const_cast<char**>(argv));
+  assert(result == argsparser::ParseResult::MISSING_VALUE);
+  assert(parser.getLastError() == "Missing required positional argument: input");
+
+  std::cout << "test_missing_positional_argument passed\n";
+}
+
+void test_too_many_positional_arguments() {
+  argsparser::Parser parser("test_app", "A test application");
+  parser.addPositionalArgument<std::string>("input", "Input file path");
+
+  const char* argv[] = {"test_app", "input.txt", "extra.txt"};
+  int argc = sizeof(argv) / sizeof(argv[0]);
+
+  auto result = parser.parse(argc, const_cast<char**>(argv));
+  assert(result == argsparser::ParseResult::INVALID_VALUE);
+  assert(parser.getLastError() == "Too many positional arguments");
+
+  std::cout << "test_too_many_positional_arguments passed\n";
+}
+
 int main() {
   test_basic_parsing();
   test_help_request();
@@ -164,6 +215,9 @@ int main() {
   test_print_help();
   test_unknown_option();
   test_equals_syntax();
+  test_positional_arguments();
+  test_missing_positional_argument();
+  test_too_many_positional_arguments();
 
   std::cout << "All tests passed!\n";
   return 0;
