@@ -476,6 +476,343 @@ class Argument<int> : public ArgumentBase {
 };
 
 /**
+ * @brief Specialization for unsigned integer arguments
+ *
+ * This specialization handles unsigned integer arguments, which require
+ * conversion from string to unsigned int during parsing.
+ */
+template <>
+class Argument<unsigned int> : public ArgumentBase {
+ public:
+  /**
+   * @brief Validator function type for unsigned integer arguments
+   *
+   * A validator is a function that takes an unsigned integer value and returns
+   * true if the value is valid, false otherwise.
+   */
+  using Validator = std::function<bool(unsigned int)>;
+
+ private:
+  unsigned int value_;
+  Validator validator_;
+
+ public:
+  /**
+   * @brief Construct a new Argument object for unsigned integer values
+   *
+   * @param name The long name of the argument (e.g., "count")
+   * @param shortName The short name of the argument (e.g., "c")
+   * @param description A description of the argument for help text
+   * @param required Whether this argument is required (default: false)
+   * @param defaultValue The default value for this argument (default: 0)
+   */
+  Argument(const std::string& name, const std::string& shortName,
+           const std::string& description, bool required = false,
+           unsigned int defaultValue = 0)
+      : ArgumentBase(name, shortName, description, required),
+        value_(defaultValue) {}
+
+  /**
+   * @brief Set a validator function for this argument
+   *
+   * The validator function will be called during parsing to validate the value.
+   * @param validator The validator function to use
+   */
+  void setValidator(const Validator& validator) { validator_ = validator; }
+
+  /**
+   * @brief Parse a string value into an unsigned integer
+   *
+   * @param value The string value to parse
+   * @return true if parsing and validation were successful, false otherwise
+   */
+  bool parse(const std::string& value) override {
+    char* end;
+    errno = 0;  // Reset errno before calling strtoul
+    unsigned long parsedValue = std::strtoul(value.c_str(), &end, 10);
+
+    // Check if the entire string was consumed
+    if (*end != '\0') {
+      return false;
+    }
+
+    // Check for overflow or negative values (strtoul would wrap negatives)
+    if (errno == ERANGE || parsedValue > UINT_MAX) {
+      return false;
+    }
+
+    // Check for negative values by looking at the original string
+    if (!value.empty() && value[0] == '-') {
+      return false;
+    }
+
+    value_ = static_cast<unsigned int>(parsedValue);
+
+    if (validator_ && !validator_(value_)) {
+      return false;
+    }
+
+    isSet_ = true;
+    return true;
+  }
+
+  /**
+   * @brief Get the parsed value of this argument
+   *
+   * @return unsigned int The parsed value
+   */
+  unsigned int getValue() const { return value_; }
+
+ protected:
+  /**
+   * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
+   * @return The type name or empty string if no type name should be displayed
+   */
+  std::string getTypeName() const override {
+    return "(unsigned integer)";
+  }
+
+  /**
+   * @brief Get the default value as a string
+   * @return String representation of the default value or empty string if no default
+   */
+  std::string getDefaultString() const override {
+    return std::to_string(value_);
+  }
+
+  /**
+   * @brief Check if the argument has a default value that should be displayed
+   * @return true if a default value should be shown, false otherwise
+   */
+  bool hasDefaultValue() const override {
+    return value_ != 0;
+  }
+};
+
+/**
+ * @brief Specialization for long integer arguments
+ *
+ * This specialization handles long integer arguments, which require
+ * conversion from string to long during parsing.
+ */
+template <>
+class Argument<long> : public ArgumentBase {
+ public:
+  /**
+   * @brief Validator function type for long integer arguments
+   *
+   * A validator is a function that takes a long integer value and returns
+   * true if the value is valid, false otherwise.
+   */
+  using Validator = std::function<bool(long)>;
+
+ private:
+  long value_;
+  Validator validator_;
+
+ public:
+  /**
+   * @brief Construct a new Argument object for long integer values
+   *
+   * @param name The long name of the argument (e.g., "count")
+   * @param shortName The short name of the argument (e.g., "c")
+   * @param description A description of the argument for help text
+   * @param required Whether this argument is required (default: false)
+   * @param defaultValue The default value for this argument (default: 0)
+   */
+  Argument(const std::string& name, const std::string& shortName,
+           const std::string& description, bool required = false,
+           long defaultValue = 0)
+      : ArgumentBase(name, shortName, description, required),
+        value_(defaultValue) {}
+
+  /**
+   * @brief Set a validator function for this argument
+   *
+   * The validator function will be called during parsing to validate the value.
+   * @param validator The validator function to use
+   */
+  void setValidator(const Validator& validator) { validator_ = validator; }
+
+  /**
+   * @brief Parse a string value into a long integer
+   *
+   * @param value The string value to parse
+   * @return true if parsing and validation were successful, false otherwise
+   */
+  bool parse(const std::string& value) override {
+    char* end;
+    errno = 0;  // Reset errno before calling strtol
+    long parsedValue = std::strtol(value.c_str(), &end, 10);
+
+    // Check if the entire string was consumed
+    if (*end != '\0') {
+      return false;
+    }
+
+    // Check for overflow/underflow
+    if (errno == ERANGE) {
+      return false;
+    }
+
+    value_ = parsedValue;
+
+    if (validator_ && !validator_(value_)) {
+      return false;
+    }
+
+    isSet_ = true;
+    return true;
+  }
+
+  /**
+   * @brief Get the parsed value of this argument
+   *
+   * @return long The parsed value
+   */
+  long getValue() const { return value_; }
+
+ protected:
+  /**
+   * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
+   * @return The type name or empty string if no type name should be displayed
+   */
+  std::string getTypeName() const override {
+    return "(long integer)";
+  }
+
+  /**
+   * @brief Get the default value as a string
+   * @return String representation of the default value or empty string if no default
+   */
+  std::string getDefaultString() const override {
+    return std::to_string(value_);
+  }
+
+  /**
+   * @brief Check if the argument has a default value that should be displayed
+   * @return true if a default value should be shown, false otherwise
+   */
+  bool hasDefaultValue() const override {
+    return value_ != 0;
+  }
+};
+
+/**
+ * @brief Specialization for unsigned long integer arguments
+ *
+ * This specialization handles unsigned long integer arguments, which require
+ * conversion from string to unsigned long during parsing.
+ */
+template <>
+class Argument<unsigned long> : public ArgumentBase {
+ public:
+  /**
+   * @brief Validator function type for unsigned long integer arguments
+   *
+   * A validator is a function that takes an unsigned long integer value and returns
+   * true if the value is valid, false otherwise.
+   */
+  using Validator = std::function<bool(unsigned long)>;
+
+ private:
+  unsigned long value_;
+  Validator validator_;
+
+ public:
+  /**
+   * @brief Construct a new Argument object for unsigned long integer values
+   *
+   * @param name The long name of the argument (e.g., "count")
+   * @param shortName The short name of the argument (e.g., "c")
+   * @param description A description of the argument for help text
+   * @param required Whether this argument is required (default: false)
+   * @param defaultValue The default value for this argument (default: 0)
+   */
+  Argument(const std::string& name, const std::string& shortName,
+           const std::string& description, bool required = false,
+           unsigned long defaultValue = 0)
+      : ArgumentBase(name, shortName, description, required),
+        value_(defaultValue) {}
+
+  /**
+   * @brief Set a validator function for this argument
+   *
+   * The validator function will be called during parsing to validate the value.
+   * @param validator The validator function to use
+   */
+  void setValidator(const Validator& validator) { validator_ = validator; }
+
+  /**
+   * @brief Parse a string value into an unsigned long integer
+   *
+   * @param value The string value to parse
+   * @return true if parsing and validation were successful, false otherwise
+   */
+  bool parse(const std::string& value) override {
+    char* end;
+    errno = 0;  // Reset errno before calling strtoul
+    unsigned long parsedValue = std::strtoul(value.c_str(), &end, 10);
+
+    // Check if the entire string was consumed
+    if (*end != '\0') {
+      return false;
+    }
+
+    // Check for overflow
+    if (errno == ERANGE) {
+      return false;
+    }
+
+    // Check for negative values by looking at the original string
+    if (!value.empty() && value[0] == '-') {
+      return false;
+    }
+
+    value_ = parsedValue;
+
+    if (validator_ && !validator_(value_)) {
+      return false;
+    }
+
+    isSet_ = true;
+    return true;
+  }
+
+  /**
+   * @brief Get the parsed value of this argument
+   *
+   * @return unsigned long The parsed value
+   */
+  unsigned long getValue() const { return value_; }
+
+ protected:
+  /**
+   * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
+   * @return The type name or empty string if no type name should be displayed
+   */
+  std::string getTypeName() const override {
+    return "(unsigned long integer)";
+  }
+
+  /**
+   * @brief Get the default value as a string
+   * @return String representation of the default value or empty string if no default
+   */
+  std::string getDefaultString() const override {
+    return std::to_string(value_);
+  }
+
+  /**
+   * @brief Check if the argument has a default value that should be displayed
+   * @return true if a default value should be shown, false otherwise
+   */
+  bool hasDefaultValue() const override {
+    return value_ != 0;
+  }
+};
+
+/**
  * @brief Specialization for float arguments
  *
  * This specialization handles float arguments, which require

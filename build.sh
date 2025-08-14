@@ -36,7 +36,20 @@ run_tests() {
             if [ $? -eq 0 ]; then
                 echo ""
                 echo "Floating point tests passed!"
-                return 0
+                
+                echo ""
+                echo "Running integer types tests..."
+                ./test_integer_types
+                
+                if [ $? -eq 0 ]; then
+                    echo ""
+                    echo "Integer types tests passed!"
+                    return 0
+                else
+                    echo ""
+                    echo "Integer types tests failed!"
+                    return 1
+                fi
             else
                 echo ""
                 echo "Floating point tests failed!"
