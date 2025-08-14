@@ -18,3 +18,4 @@ build-*/
 test_manual
 example_manual
 example_warnings
+test_manual_compile
