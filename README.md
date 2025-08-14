@@ -15,6 +15,7 @@ A simple, header-only command line argument parser library for modern C++ (C++17
 - Informative error messages
 - Support for positional arguments
 - Support for grouped short options (e.g., `-abc`)
+- Support for short options with values (e.g., `-c123`)
 - No dynamic memory allocation (except for standard library containers)
 - No exceptions (uses error codes instead)
 
@@ -256,3 +257,24 @@ This library follows the design principles outlined in QWEN.md:
 5. **No dynamic allocation**: Minimizes use of dynamic memory allocation
 6. **No exceptions**: Uses error codes instead of exceptions
 7. **Modern C++**: Leverages C++17 features where appropriate
+
+## Roadmap
+
+Here are potential improvements for future versions of ArgsParser:
+
+### High Priority
+- **Enhanced Help Output**: Improve the formatting and structure of the help output to make it more visually appealing and easier to read.
+- **Multiple Values**: Support for arguments that can take multiple values (e.g., `--file file1.txt --file file2.txt`).
+- **Subcommands**: Support for subcommands (e.g., `git commit`, `git push`).
+
+### Medium Priority
+- **Argument Dependencies**: Support for specifying dependencies between arguments (e.g., `--output` is only valid if `--input` is specified).
+- **Environment Variables**: Support for reading default values from environment variables.
+- **Configuration Files**: Support for reading arguments from configuration files (e.g., JSON, INI).
+- **Custom Parsers**: Support for custom parsers for complex types.
+
+### Low Priority
+- **Argument Groups**: Support for grouping related arguments in the help output.
+- **Hidden Arguments**: Support for arguments that are not shown in the help output.
+- **Deprecated Arguments**: Support for marking arguments as deprecated with a warning message.
+- **Autocomplete**: Support for shell autocomplete generation.
