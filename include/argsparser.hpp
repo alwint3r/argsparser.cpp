@@ -310,8 +310,8 @@ class Argument<bool> : public ArgumentBase {
   /**
    * @brief Construct a new Argument object for boolean values (flags)
    *
-   * @param name The long name of the argument (e.g., "--verbose")
-   * @param shortName The short name of the argument (e.g., "-v")
+   * @param name The long name of the argument (e.g., "verbose")
+   * @param shortName The short name of the argument (e.g., "v")
    * @param description Description of the argument
    * @param defaultValue Default value for the argument
    * @param required Whether the argument is required (not typically used for
@@ -517,6 +517,8 @@ class Argument<unsigned int> : public ArgumentBase {
    *
    * @param value The string value to parse
    * @return true if parsing and validation were successful, false otherwise
+   * @note Negative values will be rejected even if they would fit in the
+   * unsigned type.
    */
   bool parse(const std::string& value) override {
     char* end;
@@ -734,6 +736,8 @@ class Argument<unsigned long> : public ArgumentBase {
    *
    * @param value The string value to parse
    * @return true if parsing and validation were successful, false otherwise
+   * @note Negative values will be rejected even if they would fit in the
+   * unsigned type.
    */
   bool parse(const std::string& value) override {
     char* end;
@@ -845,6 +849,8 @@ class Argument<float> : public ArgumentBase {
    *
    * @param value The string value to parse
    * @return true if parsing and validation were successful, false otherwise
+   * @note Handles scientific notation (e.g., 1e-5, 2.5E+3) and standard
+   * decimal formats.
    */
   bool parse(const std::string& value) override {
     char* end;
@@ -964,6 +970,8 @@ class Argument<double> : public ArgumentBase {
    *
    * @param value The string value to parse
    * @return true if parsing and validation were successful, false otherwise
+   * @note Handles scientific notation (e.g., 1e-5, 2.5E+3) and standard
+   * decimal formats.
    */
   bool parse(const std::string& value) override {
     char* end;
@@ -1108,6 +1116,8 @@ class Parser {
    * @param required Whether this argument is required (default: false)
    * @param defaultValue The default value for this argument (default: T{})
    * @return Argument<T>* Pointer to the created argument
+   * @note The returned pointer is owned by the parser and should not be
+   * deleted.
    */
   template <typename T>
   Argument<T>* addArgument(const std::string& name,
@@ -1152,6 +1162,9 @@ class Parser {
    * @param argc The number of command-line arguments
    * @param argv The array of command-line argument strings
    * @return ParseResult The result of the parsing operation
+   * @note Supports both long options (--) and short options (-), including
+   * grouped short options (-abc) and options with values (--option=value or
+   * -ovalue).
    */
   ParseResult parse(int argc, char* argv[]) {
     // Clear the last error
@@ -1343,6 +1356,8 @@ class Parser {
    * @brief Print help information for all arguments
    *
    * @param os The output stream to print to (default: std::cout)
+   * @note The help output includes both option arguments and positional
+   * arguments, as well as a usage line showing how to use the program.
    */
   void printHelp(std::ostream& os = std::cout) const {
     os << "Usage: " << programName_;
@@ -1396,6 +1411,7 @@ class Parser {
    *
    * @param name The name of the argument to check
    * @return true if the argument was provided, false otherwise
+   * @note Works for both option arguments and positional arguments.
    */
   bool isSet(const std::string& name) const {
     // Check option arguments first
@@ -1420,6 +1436,8 @@ class Parser {
    * @tparam T The type of the argument value
    * @param name The name of the argument
    * @return const T& The parsed value of the argument
+   * @note If the argument doesn't exist or the type doesn't match, a default
+   * constructed value is returned.
    */
   template <typename T>
   const T& getValue(const std::string& name) const {
