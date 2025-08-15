@@ -1,15 +1,16 @@
 #include <cassert>
-#include <iostream>
-#include <sstream>
 #include <cmath>
+#include <iostream>
 #include <limits>
+#include <sstream>
 
 #include "argsparser.hpp"
 
 void test_float_parsing() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* rate = parser.addArgument<float>("rate", "r", "Rate value", false, 1.5f);
+  auto* rate =
+      parser.addArgument<float>("rate", "r", "Rate value", false, 1.5f);
   auto* factor = parser.addArgument<float>("factor", "f", "Factor value", true);
 
   const char* argv[] = {"test_app", "--rate", "3.14", "--factor", "2.718"};
@@ -30,10 +31,12 @@ void test_float_parsing() {
 void test_double_parsing() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* precision = parser.addArgument<double>("precision", "p", "Precision value", false, 1.0);
+  auto* precision = parser.addArgument<double>("precision", "p",
+                                               "Precision value", false, 1.0);
   auto* pi = parser.addArgument<double>("pi", "", "Pi value", true);
 
-  const char* argv[] = {"test_app", "--precision", "1e-15", "--pi", "3.141592653589793"};
+  const char* argv[] = {"test_app", "--precision", "1e-15", "--pi",
+                        "3.141592653589793"};
   int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
@@ -51,7 +54,8 @@ void test_double_parsing() {
 void test_float_negative_values() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* temperature = parser.addArgument<float>("temp", "t", "Temperature", true);
+  auto* temperature =
+      parser.addArgument<float>("temp", "t", "Temperature", true);
 
   const char* argv[] = {"test_app", "--temp", "-273.15"};
   int argc = sizeof(argv) / sizeof(argv[0]);
@@ -71,7 +75,8 @@ void test_float_scientific_notation() {
   auto* small = parser.addArgument<double>("small", "s", "Small value", true);
   auto* large = parser.addArgument<double>("large", "l", "Large value", true);
 
-  const char* argv[] = {"test_app", "--small", "1.23e-10", "--large", "4.56E+20"};
+  const char* argv[] = {"test_app", "--small", "1.23e-10", "--large",
+                        "4.56E+20"};
   int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
@@ -111,12 +116,12 @@ void test_float_invalid_values() {
 void test_float_validator() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* percentage = parser.addArgument<float>("percent", "p", "Percentage", true);
-  
+  auto* percentage =
+      parser.addArgument<float>("percent", "p", "Percentage", true);
+
   // Set validator to ensure percentage is between 0 and 100
-  percentage->setValidator([](float value) {
-    return value >= 0.0f && value <= 100.0f;
-  });
+  percentage->setValidator(
+      [](float value) { return value >= 0.0f && value <= 100.0f; });
 
   // Test valid percentage
   const char* argv1[] = {"test_app", "--percent", "85.5"};
@@ -146,12 +151,11 @@ void test_float_validator() {
 void test_double_validator() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* threshold = parser.addArgument<double>("threshold", "t", "Threshold value", true);
-  
+  auto* threshold =
+      parser.addArgument<double>("threshold", "t", "Threshold value", true);
+
   // Set validator to ensure threshold is positive
-  threshold->setValidator([](double value) {
-    return value > 0.0;
-  });
+  threshold->setValidator([](double value) { return value > 0.0; });
 
   // Test valid threshold
   const char* argv1[] = {"test_app", "--threshold", "0.0001"};
@@ -174,8 +178,10 @@ void test_double_validator() {
 void test_float_default_values() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* rate = parser.addArgument<float>("rate", "r", "Rate value", false, 2.5f);
-  auto* factor = parser.addArgument<double>("factor", "f", "Factor value", false, 1.618);
+  auto* rate =
+      parser.addArgument<float>("rate", "r", "Rate value", false, 2.5f);
+  auto* factor =
+      parser.addArgument<double>("factor", "f", "Factor value", false, 1.618);
 
   // Parse without providing values - should use defaults
   const char* argv[] = {"test_app"};
@@ -196,13 +202,15 @@ void test_float_default_values() {
 void test_float_help_output() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* rate = parser.addArgument<float>("rate", "r", "Processing rate", false, 1.5f);
-  auto* precision = parser.addArgument<double>("precision", "p", "Calculation precision", true);
+  auto* rate =
+      parser.addArgument<float>("rate", "r", "Processing rate", false, 1.5f);
+  auto* precision = parser.addArgument<double>("precision", "p",
+                                               "Calculation precision", true);
 
   std::stringstream ss;
   rate->printHelp(ss);
   std::string rateHelp = ss.str();
-  
+
   assert(rateHelp.find("-r, --rate") != std::string::npos);
   assert(rateHelp.find("Processing rate") != std::string::npos);
   assert(rateHelp.find("(float)") != std::string::npos);
@@ -212,7 +220,7 @@ void test_float_help_output() {
   ss.clear();
   precision->printHelp(ss);
   std::string precisionHelp = ss.str();
-  
+
   assert(precisionHelp.find("-p, --precision") != std::string::npos);
   assert(precisionHelp.find("Calculation precision") != std::string::npos);
   assert(precisionHelp.find("(double)") != std::string::npos);
@@ -225,13 +233,16 @@ void test_mixed_types() {
   argsparser::Parser parser("test_app", "A test application");
 
   auto* verbose = parser.addArgument<bool>("verbose", "v", "Verbose output");
-  auto* inputFile = parser.addArgument<std::string>("input", "i", "Input file", true);
+  auto* inputFile =
+      parser.addArgument<std::string>("input", "i", "Input file", true);
   auto* count = parser.addArgument<int>("count", "c", "Count", false, 10);
   auto* rate = parser.addArgument<float>("rate", "r", "Rate", false, 1.0f);
-  auto* precision = parser.addArgument<double>("precision", "p", "Precision", false, 1e-6);
+  auto* precision =
+      parser.addArgument<double>("precision", "p", "Precision", false, 1e-6);
 
-  const char* argv[] = {"test_app", "--input", "data.txt", "--verbose", 
-                        "--count", "42", "--rate", "3.14", "--precision", "1e-12"};
+  const char* argv[] = {"test_app",    "--input", "data.txt", "--verbose",
+                        "--count",     "42",      "--rate",   "3.14",
+                        "--precision", "1e-12"};
   int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));

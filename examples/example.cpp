@@ -17,8 +17,10 @@ int main(int argc, char* argv[]) {
       "output", "o", "Output file path", false, "output.txt");
   auto* count =
       parser.addArgument<int>("count", "c", "Number of iterations", false, 1);
-  auto* rate = parser.addArgument<float>("rate", "r", "Processing rate", false, 1.0f);
-  auto* precision = parser.addArgument<double>("precision", "p", "Calculation precision", false, 1e-6);
+  auto* rate =
+      parser.addArgument<float>("rate", "r", "Processing rate", false, 1.0f);
+  auto* precision = parser.addArgument<double>(
+      "precision", "p", "Calculation precision", false, 1e-6);
 
   // Add positional arguments
   auto* sourceFile = parser.addPositionalArgument<std::string>(

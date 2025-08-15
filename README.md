@@ -120,6 +120,24 @@ To clean up build artifacts:
 ./build.sh clean
 ```
 
+## Code Formatting
+
+This project uses `clang-format` with the Google style guide to ensure consistent code formatting. A pre-commit hook is installed automatically to format C++ files before committing.
+
+To format all C++ files in the project manually, you can run:
+
+```bash
+./format.sh
+```
+
+If you want to format individual files, you can use `clang-format` directly:
+
+```bash
+clang-format -i src/file.cpp include/file.hpp
+```
+
+The pre-commit hook will automatically format and stage any C++ files you've modified before committing them.
+
 ## Running Tests
 
 When you run `./build.sh`, it automatically runs the tests for you. However, if you want to run them manually, you can find the executables in the build directories:

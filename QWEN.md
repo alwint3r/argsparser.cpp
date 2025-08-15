@@ -69,7 +69,7 @@ Examples are located in the `examples/` directory.
     - All error states should be handled explicitly and locally where possible. Function return values should clearly indicate success or failure.
 - **Const Correctness:** Use `const` extensively to ensure data integrity and clearly define intent.
 - **Modern C++ Features (Judiciously):** Leverage modern C++ features (C++11/14/17/20/23 and beyond, as appropriate for the project's compiler and embedded constraints) to write safer and more expressive code. Be mindful of potential code size or performance implications of certain features in constrained environments.
-- **Code Style & Formatting:** Adhere to a consistent code style. (Consider adding a reference to a specific style guide or a `.clang-format` file if you have one).
+- **Code Style & Formatting:** Adhere to a consistent code style using the Google style guide with `clang-format`. A `.clang-format` configuration file is included in the project root. A pre-commit hook automatically formats C++ files before committing. You can also run `./format.sh` to format all C++ files in the project.
 - **Documentation:**
     - Document all public interfaces (classes, methods, functions) clearly.
     - Explain complex logic or algorithms with comments.

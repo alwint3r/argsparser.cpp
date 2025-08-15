@@ -8,8 +8,10 @@
 void test_unsigned_int_parsing() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* count = parser.addArgument<unsigned int>("count", "c", "Count value", false, 10u);
-  auto* size = parser.addArgument<unsigned int>("size", "s", "Size value", true);
+  auto* count =
+      parser.addArgument<unsigned int>("count", "c", "Count value", false, 10u);
+  auto* size =
+      parser.addArgument<unsigned int>("size", "s", "Size value", true);
 
   const char* argv[] = {"test_app", "--count", "42", "--size", "100"};
   int argc = sizeof(argv) / sizeof(argv[0]);
@@ -43,10 +45,12 @@ void test_unsigned_int_negative_values() {
 void test_unsigned_int_overflow() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* largeNumber = parser.addArgument<unsigned int>("large", "l", "A large number");
+  auto* largeNumber =
+      parser.addArgument<unsigned int>("large", "l", "A large number");
 
   // Test with a number that's too large for unsigned int
-  std::string largeValue = std::to_string(static_cast<unsigned long long>(UINT_MAX) + 1);
+  std::string largeValue =
+      std::to_string(static_cast<unsigned long long>(UINT_MAX) + 1);
   const char* argv[] = {"test_app", "--large", largeValue.c_str()};
   int argc = sizeof(argv) / sizeof(argv[0]);
 
@@ -59,7 +63,8 @@ void test_unsigned_int_overflow() {
 void test_unsigned_int_max() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* maxNumber = parser.addArgument<unsigned int>("max", "m", "Maximum unsigned int value");
+  auto* maxNumber = parser.addArgument<unsigned int>(
+      "max", "m", "Maximum unsigned int value");
 
   // Test with UINT_MAX, which should work
   std::string maxValue = std::to_string(UINT_MAX);
@@ -76,7 +81,8 @@ void test_unsigned_int_max() {
 void test_long_parsing() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* count = parser.addArgument<long>("count", "c", "Count value", false, 10L);
+  auto* count =
+      parser.addArgument<long>("count", "c", "Count value", false, 10L);
   auto* size = parser.addArgument<long>("size", "s", "Size value", true);
 
   const char* argv[] = {"test_app", "--count", "42", "--size", "-100"};
@@ -100,7 +106,8 @@ void test_long_overflow() {
   auto* largeNumber = parser.addArgument<long>("large", "l", "A large number");
 
   // Create a number larger than LONG_MAX
-  std::string largeValue = std::to_string(LONG_MAX) + "0";  // Add a digit to make it larger
+  std::string largeValue =
+      std::to_string(LONG_MAX) + "0";  // Add a digit to make it larger
   const char* argv[] = {"test_app", "--large", largeValue.c_str()};
   int argc = sizeof(argv) / sizeof(argv[0]);
 
@@ -116,7 +123,8 @@ void test_long_underflow() {
   auto* smallNumber = parser.addArgument<long>("small", "s", "A small number");
 
   // Create a number smaller than LONG_MIN
-  std::string smallValue = std::to_string(LONG_MIN) + "0";  // Add a digit to make it smaller
+  std::string smallValue =
+      std::to_string(LONG_MIN) + "0";  // Add a digit to make it smaller
   const char* argv[] = {"test_app", "--small", smallValue.c_str()};
   int argc = sizeof(argv) / sizeof(argv[0]);
 
@@ -135,7 +143,8 @@ void test_long_max_min() {
   // Test with LONG_MAX and LONG_MIN, which should work
   std::string maxValue = std::to_string(LONG_MAX);
   std::string minValue = std::to_string(LONG_MIN);
-  const char* argv[] = {"test_app", "--max", maxValue.c_str(), "--min", minValue.c_str()};
+  const char* argv[] = {"test_app", "--max", maxValue.c_str(), "--min",
+                        minValue.c_str()};
   int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
@@ -149,8 +158,10 @@ void test_long_max_min() {
 void test_unsigned_long_parsing() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* count = parser.addArgument<unsigned long>("count", "c", "Count value", false, 10UL);
-  auto* size = parser.addArgument<unsigned long>("size", "s", "Size value", true);
+  auto* count = parser.addArgument<unsigned long>("count", "c", "Count value",
+                                                  false, 10UL);
+  auto* size =
+      parser.addArgument<unsigned long>("size", "s", "Size value", true);
 
   const char* argv[] = {"test_app", "--count", "42", "--size", "1000000"};
   int argc = sizeof(argv) / sizeof(argv[0]);
@@ -184,10 +195,12 @@ void test_unsigned_long_negative_values() {
 void test_unsigned_long_overflow() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* largeNumber = parser.addArgument<unsigned long>("large", "l", "A large number");
+  auto* largeNumber =
+      parser.addArgument<unsigned long>("large", "l", "A large number");
 
   // Create a number larger than ULONG_MAX
-  std::string largeValue = std::to_string(ULONG_MAX) + "0";  // Add a digit to make it larger
+  std::string largeValue =
+      std::to_string(ULONG_MAX) + "0";  // Add a digit to make it larger
   const char* argv[] = {"test_app", "--large", largeValue.c_str()};
   int argc = sizeof(argv) / sizeof(argv[0]);
 
@@ -200,7 +213,8 @@ void test_unsigned_long_overflow() {
 void test_unsigned_long_max() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* maxNumber = parser.addArgument<unsigned long>("max", "m", "Maximum unsigned long value");
+  auto* maxNumber = parser.addArgument<unsigned long>(
+      "max", "m", "Maximum unsigned long value");
 
   // Test with ULONG_MAX, which should work
   std::string maxValue = std::to_string(ULONG_MAX);
@@ -217,7 +231,8 @@ void test_unsigned_long_max() {
 void test_integer_types_validators() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* positive = parser.addArgument<unsigned int>("positive", "p", "Positive value");
+  auto* positive =
+      parser.addArgument<unsigned int>("positive", "p", "Positive value");
   auto* even = parser.addArgument<long>("even", "e", "Even value");
   auto* large = parser.addArgument<unsigned long>("large", "l", "Large value");
 
@@ -226,7 +241,8 @@ void test_integer_types_validators() {
   even->setValidator([](long value) { return value % 2 == 0; });
   large->setValidator([](unsigned long value) { return value > 1000000UL; });
 
-  const char* argv[] = {"test_app", "--positive", "5", "--even", "42", "--large", "2000000"};
+  const char* argv[] = {"test_app", "--positive", "5",      "--even",
+                        "42",       "--large",    "2000000"};
   int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
@@ -242,7 +258,8 @@ void test_integer_types_validators() {
 void test_integer_types_validator_failures() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* positive = parser.addArgument<unsigned int>("positive", "p", "Positive value");
+  auto* positive =
+      parser.addArgument<unsigned int>("positive", "p", "Positive value");
   positive->setValidator([](unsigned int value) { return value > 0; });
 
   const char* argv[] = {"test_app", "--positive", "0"};
@@ -257,12 +274,16 @@ void test_integer_types_validator_failures() {
 void test_mixed_integer_types() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* regular = parser.addArgument<int>("regular", "r", "Regular int", false, 10);
-  auto* unsignedInt = parser.addArgument<unsigned int>("unsigned", "u", "Unsigned int", false, 20u);
+  auto* regular =
+      parser.addArgument<int>("regular", "r", "Regular int", false, 10);
+  auto* unsignedInt = parser.addArgument<unsigned int>(
+      "unsigned", "u", "Unsigned int", false, 20u);
   auto* longInt = parser.addArgument<long>("long", "l", "Long int", false, 30L);
-  auto* unsignedLong = parser.addArgument<unsigned long>("ulong", "g", "Unsigned long", false, 40UL);
+  auto* unsignedLong = parser.addArgument<unsigned long>(
+      "ulong", "g", "Unsigned long", false, 40UL);
 
-  const char* argv[] = {"test_app", "--regular", "-5", "--unsigned", "15", "--long", "-123456789", "--ulong", "987654321"};
+  const char* argv[] = {"test_app", "--regular",  "-5",      "--unsigned", "15",
+                        "--long",   "-123456789", "--ulong", "987654321"};
   int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));

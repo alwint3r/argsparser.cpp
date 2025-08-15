@@ -3,8 +3,8 @@
 
 #include <cerrno>   // For errno
 #include <climits>  // For INT_MAX and INT_MIN
-#include <cstdlib>  // For atoi
 #include <cstdio>   // For snprintf
+#include <cstdlib>  // For atoi
 #include <functional>
 #include <iostream>
 #include <map>
@@ -114,7 +114,8 @@ class ArgumentBase {
 
   /**
    * @brief Get the default value as a string
-   * @return String representation of the default value or empty string if no default
+   * @return String representation of the default value or empty string if no
+   * default
    */
   virtual std::string getDefaultString() const { return ""; }
 
@@ -282,19 +283,16 @@ class Argument<std::string> : public ArgumentBase {
  protected:
   /**
    * @brief Get the default value as a string
-   * @return String representation of the default value or empty string if no default
+   * @return String representation of the default value or empty string if no
+   * default
    */
-  std::string getDefaultString() const override {
-    return value_;
-  }
+  std::string getDefaultString() const override { return value_; }
 
   /**
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override {
-    return !value_.empty();
-  }
+  bool hasDefaultValue() const override { return !value_.empty(); }
 };
 
 /**
@@ -351,19 +349,16 @@ class Argument<bool> : public ArgumentBase {
  protected:
   /**
    * @brief Get the default value as a string
-   * @return String representation of the default value or empty string if no default
+   * @return String representation of the default value or empty string if no
+   * default
    */
-  std::string getDefaultString() const override {
-    return value_ ? "true" : "";
-  }
+  std::string getDefaultString() const override { return value_ ? "true" : ""; }
 
   /**
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override {
-    return value_;
-  }
+  bool hasDefaultValue() const override { return value_; }
 };
 
 /**
@@ -454,13 +449,12 @@ class Argument<int> : public ArgumentBase {
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override {
-    return "(integer)";
-  }
+  std::string getTypeName() const override { return "(integer)"; }
 
   /**
    * @brief Get the default value as a string
-   * @return String representation of the default value or empty string if no default
+   * @return String representation of the default value or empty string if no
+   * default
    */
   std::string getDefaultString() const override {
     return std::to_string(value_);
@@ -470,9 +464,7 @@ class Argument<int> : public ArgumentBase {
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override {
-    return value_ != 0;
-  }
+  bool hasDefaultValue() const override { return value_ != 0; }
 };
 
 /**
@@ -568,13 +560,12 @@ class Argument<unsigned int> : public ArgumentBase {
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override {
-    return "(unsigned integer)";
-  }
+  std::string getTypeName() const override { return "(unsigned integer)"; }
 
   /**
    * @brief Get the default value as a string
-   * @return String representation of the default value or empty string if no default
+   * @return String representation of the default value or empty string if no
+   * default
    */
   std::string getDefaultString() const override {
     return std::to_string(value_);
@@ -584,9 +575,7 @@ class Argument<unsigned int> : public ArgumentBase {
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override {
-    return value_ != 0;
-  }
+  bool hasDefaultValue() const override { return value_ != 0; }
 };
 
 /**
@@ -677,13 +666,12 @@ class Argument<long> : public ArgumentBase {
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override {
-    return "(long integer)";
-  }
+  std::string getTypeName() const override { return "(long integer)"; }
 
   /**
    * @brief Get the default value as a string
-   * @return String representation of the default value or empty string if no default
+   * @return String representation of the default value or empty string if no
+   * default
    */
   std::string getDefaultString() const override {
     return std::to_string(value_);
@@ -693,9 +681,7 @@ class Argument<long> : public ArgumentBase {
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override {
-    return value_ != 0;
-  }
+  bool hasDefaultValue() const override { return value_ != 0; }
 };
 
 /**
@@ -710,8 +696,8 @@ class Argument<unsigned long> : public ArgumentBase {
   /**
    * @brief Validator function type for unsigned long integer arguments
    *
-   * A validator is a function that takes an unsigned long integer value and returns
-   * true if the value is valid, false otherwise.
+   * A validator is a function that takes an unsigned long integer value and
+   * returns true if the value is valid, false otherwise.
    */
   using Validator = std::function<bool(unsigned long)>;
 
@@ -791,13 +777,12 @@ class Argument<unsigned long> : public ArgumentBase {
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override {
-    return "(unsigned long integer)";
-  }
+  std::string getTypeName() const override { return "(unsigned long integer)"; }
 
   /**
    * @brief Get the default value as a string
-   * @return String representation of the default value or empty string if no default
+   * @return String representation of the default value or empty string if no
+   * default
    */
   std::string getDefaultString() const override {
     return std::to_string(value_);
@@ -807,9 +792,7 @@ class Argument<unsigned long> : public ArgumentBase {
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override {
-    return value_ != 0;
-  }
+  bool hasDefaultValue() const override { return value_ != 0; }
 };
 
 /**
@@ -900,9 +883,7 @@ class Argument<float> : public ArgumentBase {
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override {
-    return "(float)";
-  }
+  std::string getTypeName() const override { return "(float)"; }
 
   /**
    * @brief Format a float value to a string without trailing zeros
@@ -921,19 +902,16 @@ class Argument<float> : public ArgumentBase {
 
   /**
    * @brief Get the default value as a string
-   * @return String representation of the default value or empty string if no default
+   * @return String representation of the default value or empty string if no
+   * default
    */
-  std::string getDefaultString() const override {
-    return formatFloat(value_);
-  }
+  std::string getDefaultString() const override { return formatFloat(value_); }
 
   /**
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override {
-    return value_ != 0.0f;
-  }
+  bool hasDefaultValue() const override { return value_ != 0.0f; }
 };
 
 /**
@@ -1024,9 +1002,7 @@ class Argument<double> : public ArgumentBase {
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override {
-    return "(double)";
-  }
+  std::string getTypeName() const override { return "(double)"; }
 
   /**
    * @brief Format a double value to a string without trailing zeros
@@ -1045,19 +1021,16 @@ class Argument<double> : public ArgumentBase {
 
   /**
    * @brief Get the default value as a string
-   * @return String representation of the default value or empty string if no default
+   * @return String representation of the default value or empty string if no
+   * default
    */
-  std::string getDefaultString() const override {
-    return formatDouble(value_);
-  }
+  std::string getDefaultString() const override { return formatDouble(value_); }
 
   /**
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override {
-    return value_ != 0.0;
-  }
+  bool hasDefaultValue() const override { return value_ != 0.0; }
 };
 
 /**
@@ -1074,13 +1047,13 @@ inline void ArgumentBase::printHelp(std::ostream& os) const {
     os << " (required)";
   }
   os << "\n    " << description_;
-  
+
   // Add type name if applicable
   std::string typeName = getTypeName();
   if (!typeName.empty()) {
     os << " " << typeName;
   }
-  
+
   // Add default value if applicable
   if (hasDefaultValue()) {
     std::string defaultStr = getDefaultString();
@@ -1163,10 +1136,9 @@ class Parser {
    * @return Argument<T>* Pointer to the created argument
    */
   template <typename T>
-  Argument<T>* addPositionalArgument(const std::string& name,
-                                     const std::string& description,
-                                     bool required = true,
-                                     const T& defaultValue = T{}) {
+  Argument<T>*
+  addPositionalArgument(const std::string& name, const std::string& description,
+                        bool required = true, const T& defaultValue = T{}) {
     auto arg = std::make_unique<Argument<T>>(name, "", description, required,
                                              defaultValue);
     Argument<T>* ptr = arg.get();
