@@ -12,6 +12,20 @@ cleanup() {
     echo "Build artifacts cleaned up successfully!"
 }
 
+# Function to run simplified static analysis
+run_static_analysis() {
+    echo "Running simplified static analysis..."
+    
+    # Check if clang-tidy is available
+    if ! command -v clang-tidy &> /dev/null; then
+        echo "Error: clang-tidy is not installed or not in PATH"
+        return 1
+    fi
+    
+    # Run our simplified static analysis script
+    ./run-simple-static-analysis.sh
+}
+
 # Function to run tests
 run_tests() {
     echo "Running tests..."
@@ -66,11 +80,15 @@ run_tests() {
     fi
 }
 
-
-
 # Check if cleanup flag is provided
 if [ "$1" == "clean" ]; then
     cleanup
+    exit 0
+fi
+
+# Check if static analysis flag is provided
+if [ "$1" == "analyze" ]; then
+    run_static_analysis
     exit 0
 fi
 
@@ -80,7 +98,7 @@ echo "Building ArgsParser..."
 echo "Building with C++17 standard..."
 mkdir -p build
 cd build
-cmake .. -DCMAKE_CXX_STANDARD=17
+cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 make
 
 if [ $? -eq 0 ]; then
@@ -98,6 +116,7 @@ if [ $? -eq 0 ]; then
         echo "  ./example --input input.txt --output result.txt --count 5 --verbose"
         echo ""
         echo "To clean up build artifacts, run: ./build.sh clean"
+        echo "To run static analysis, run: ./build.sh analyze"
     else
         exit 1
     fi

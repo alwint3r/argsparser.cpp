@@ -137,6 +137,23 @@ clang-format -i src/file.cpp include/file.hpp
 
 The pre-commit hook will automatically format and stage any C++ files you've modified before committing them.
 
+## Static Analysis
+
+This project includes static analysis capabilities using clang-tidy to help identify potential issues and improve code quality.
+
+To run static analysis:
+
+```bash
+./build.sh analyze
+```
+
+This will:
+1. Configure the project with CMake
+2. Run simplified static analysis with clang-tidy
+3. Show key warnings and suggestions
+
+For more information on static analysis, see [docs/static-analysis.md](docs/static-analysis.md).
+
 ## Running Tests
 
 When you run `./build.sh`, it automatically runs the tests for you. However, if you want to run them manually, you can find the executables in the build directories:

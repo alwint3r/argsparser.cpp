@@ -2,7 +2,7 @@
 
 #include "argsparser.hpp"
 
-int main(int argc, char* argv[]) {
+auto main(int argc, char* argv[]) -> int {
   argsparser::Parser parser(
       "example", "An example application demonstrating the argsparser library");
 
@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
   auto* count = parser.addArgument<int32_t>("count", "c",
                                             "Number of iterations", false, 1);
   auto* rate =
-      parser.addArgument<float>("rate", "r", "Processing rate", false, 1.0f);
+      parser.addArgument<float>("rate", "r", "Processing rate", false, 1.0F);
   auto* precision = parser.addArgument<double>(
       "precision", "p", "Calculation precision", false, 1e-6);
 
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
 
   // Add validators
   count->setValidator([](int32_t value) { return value > 0; });
-  rate->setValidator([](float value) { return value > 0.0f; });
+  rate->setValidator([](float value) { return value > 0.0F; });
   precision->setValidator([](double value) { return value > 0.0; });
 
   // Parse command line arguments
@@ -46,15 +46,7 @@ int main(int argc, char* argv[]) {
       break;
 
     case argsparser::ParseResult::UNKNOWN_OPTION:
-      std::cerr << "Error: " << parser.getLastError() << "\n";
-      parser.printHelp(std::cerr);
-      return 1;
-
     case argsparser::ParseResult::MISSING_VALUE:
-      std::cerr << "Error: " << parser.getLastError() << "\n";
-      parser.printHelp(std::cerr);
-      return 1;
-
     case argsparser::ParseResult::INVALID_VALUE:
       std::cerr << "Error: " << parser.getLastError() << "\n";
       parser.printHelp(std::cerr);
