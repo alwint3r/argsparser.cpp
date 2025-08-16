@@ -7,18 +7,18 @@ int main(int argc, char* argv[]) {
                             "Demonstration of new integer argument types");
 
   // Add arguments for different integer types
-  auto* regular_int =
-      parser.addArgument<int>("int", "i", "Regular signed integer", false, 0);
-  auto* unsigned_int = parser.addArgument<unsigned int>(
-      "uint", "u", "Unsigned integer", false, 0u);
-  auto* long_int =
-      parser.addArgument<long>("long", "l", "Long signed integer", false, 0L);
-  auto* unsigned_long = parser.addArgument<unsigned long>(
+  auto* regular_int = parser.addArgument<int32_t>(
+      "int", "i", "Regular signed integer", false, 0);
+  auto* unsigned_int =
+      parser.addArgument<uint32_t>("uint", "u", "Unsigned integer", false, 0u);
+  auto* long_int = parser.addArgument<int64_t>(
+      "long", "l", "Long signed integer", false, 0L);
+  auto* unsigned_long = parser.addArgument<uint64_t>(
       "ulong", "g", "Unsigned long integer", false, 0UL);
 
   // Set validators to show range capabilities
-  unsigned_int->setValidator([](unsigned int value) { return value > 0; });
-  long_int->setValidator([](long value) { return value != 0; });
+  unsigned_int->setValidator([](uint32_t value) { return value > 0; });
+  long_int->setValidator([](int64_t value) { return value != 0; });
 
   auto result = parser.parse(argc, argv);
 
@@ -43,10 +43,12 @@ int main(int argc, char* argv[]) {
 
   std::cout << "\nType Ranges:\n";
   std::cout << "============\n";
-  std::cout << "int range: " << INT_MIN << " to " << INT_MAX << std::endl;
-  std::cout << "unsigned int range: 0 to " << UINT_MAX << std::endl;
-  std::cout << "long range: " << LONG_MIN << " to " << LONG_MAX << std::endl;
-  std::cout << "unsigned long range: 0 to " << ULONG_MAX << std::endl;
+  std::cout << "int32_t range: " << INT32_MIN << " to " << INT32_MAX
+            << std::endl;
+  std::cout << "uint32_t range: 0 to " << UINT32_MAX << std::endl;
+  std::cout << "int64_t range: " << INT64_MIN << " to " << INT64_MAX
+            << std::endl;
+  std::cout << "uint64_t range: 0 to " << UINT64_MAX << std::endl;
 
   return 0;
 }

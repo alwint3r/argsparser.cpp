@@ -11,8 +11,8 @@ void test_basic_parsing() {
       "verbose", "v", "Enable verbose output", false, false);
   auto* inputFile =
       parser.addArgument<std::string>("input", "i", "Input file path", true);
-  auto* count =
-      parser.addArgument<int>("count", "c", "Number of iterations", false, 10);
+  auto* count = parser.addArgument<int32_t>("count", "c",
+                                            "Number of iterations", false, 10);
 
   const char* argv[] = {"test_app", "--input", "test.txt", "-v", "-c", "5"};
   int argc = sizeof(argv) / sizeof(argv[0]);
@@ -60,7 +60,8 @@ void test_missing_value() {
 
 void test_invalid_value() {
   argsparser::Parser parser("test_app", "A test application");
-  auto* count = parser.addArgument<int>("count", "c", "Number of iterations");
+  auto* count =
+      parser.addArgument<int32_t>("count", "c", "Number of iterations");
 
   const char* argv[] = {"test_app", "--count", "not_a_number"};
   int argc = sizeof(argv) / sizeof(argv[0]);
@@ -75,9 +76,9 @@ void test_invalid_value() {
 
 void test_validator() {
   argsparser::Parser parser("test_app", "A test application");
-  auto* count = parser.addArgument<int>(
+  auto* count = parser.addArgument<int32_t>(
       "count", "c", "Number of iterations (must be positive)");
-  count->setValidator([](int value) { return value > 0; });
+  count->setValidator([](int32_t value) { return value > 0; });
 
   const char* argv[] = {"test_app", "--count", "-5"};
   int argc = sizeof(argv) / sizeof(argv[0]);
@@ -93,7 +94,7 @@ void test_print_help() {
   parser.addArgument<bool>("verbose", "v", "Enable verbose output");
   parser.addArgument<std::string>("input", "i", "Input file path", true,
                                   "default.txt");
-  parser.addArgument<int>("count", "c", "Number of iterations", false, 10);
+  parser.addArgument<int32_t>("count", "c", "Number of iterations", false, 10);
 
   std::ostringstream oss;
   parser.printHelp(oss);
@@ -139,8 +140,8 @@ void test_equals_syntax() {
   argsparser::Parser parser("test_app", "A test application");
   auto* inputFile =
       parser.addArgument<std::string>("input", "i", "Input file path", true);
-  auto* count =
-      parser.addArgument<int>("count", "c", "Number of iterations", false, 10);
+  auto* count = parser.addArgument<int32_t>("count", "c",
+                                            "Number of iterations", false, 10);
 
   const char* argv[] = {"test_app", "--input=test.txt", "--count=5"};
   int argc = sizeof(argv) / sizeof(argv[0]);
@@ -163,8 +164,8 @@ void test_positional_arguments() {
       parser.addPositionalArgument<std::string>("input", "Input file path");
   auto* outputFile = parser.addPositionalArgument<std::string>(
       "output", "Output file path", false, "default.out");
-  auto* count =
-      parser.addArgument<int>("count", "c", "Number of iterations", false, 10);
+  auto* count = parser.addArgument<int32_t>("count", "c",
+                                            "Number of iterations", false, 10);
 
   const char* argv[] = {"test_app", "input.txt", "output.txt", "--count=5"};
   int argc = sizeof(argv) / sizeof(argv[0]);
@@ -244,7 +245,8 @@ void test_grouped_short_options_with_non_bool() {
   argsparser::Parser parser("test_app", "A test application");
   auto* verbose =
       parser.addArgument<bool>("verbose", "v", "Enable verbose output");
-  auto* count = parser.addArgument<int>("count", "c", "Number of iterations");
+  auto* count =
+      parser.addArgument<int32_t>("count", "c", "Number of iterations");
   auto* inputFile =
       parser.addArgument<std::string>("input", "i", "Input file path", true);
 

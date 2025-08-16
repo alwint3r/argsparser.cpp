@@ -15,8 +15,8 @@ int main(int argc, char* argv[]) {
       parser.addArgument<std::string>("input", "i", "Input file path", true);
   auto* outputFile = parser.addArgument<std::string>(
       "output", "o", "Output file path", false, "output.txt");
-  auto* count =
-      parser.addArgument<int>("count", "c", "Number of iterations", false, 1);
+  auto* count = parser.addArgument<int32_t>("count", "c",
+                                            "Number of iterations", false, 1);
   auto* rate =
       parser.addArgument<float>("rate", "r", "Processing rate", false, 1.0f);
   auto* precision = parser.addArgument<double>(
@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
       "dest", "Destination file", false);
 
   // Add validators
-  count->setValidator([](int value) { return value > 0; });
+  count->setValidator([](int32_t value) { return value > 0; });
   rate->setValidator([](float value) { return value > 0.0f; });
   precision->setValidator([](double value) { return value > 0.0; });
 
