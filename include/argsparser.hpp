@@ -3,6 +3,7 @@
 
 #include <cerrno>   // For errno
 #include <climits>  // For INT_MAX and INT_MIN
+#include <cstdint>  // For fixed-width integer types
 #include <cstdio>   // For snprintf
 #include <cstdlib>  // For atoi
 #include <functional>
@@ -362,29 +363,29 @@ class Argument<bool> : public ArgumentBase {
 };
 
 /**
- * @brief Specialization for integer arguments
+ * @brief Specialization for 16-bit integer arguments
  *
- * This specialization handles integer arguments, which require
- * conversion from string to int during parsing.
+ * This specialization handles 16-bit integer arguments, which require
+ * conversion from string to int16_t during parsing.
  */
 template <>
-class Argument<int> : public ArgumentBase {
+class Argument<int16_t> : public ArgumentBase {
  public:
   /**
-   * @brief Validator function type for integer arguments
+   * @brief Validator function type for 16-bit integer arguments
    *
-   * A validator is a function that takes an integer value and returns
+   * A validator is a function that takes an int16_t value and returns
    * true if the value is valid, false otherwise.
    */
-  using Validator = std::function<bool(int)>;
+  using Validator = std::function<bool(int16_t)>;
 
  private:
-  int value_;
+  int16_t value_;
   Validator validator_;
 
  public:
   /**
-   * @brief Construct a new Argument object for integer values
+   * @brief Construct a new Argument object for 16-bit integer values
    *
    * @param name The long name of the argument (e.g., "count")
    * @param shortName The short name of the argument (e.g., "c")
@@ -394,7 +395,7 @@ class Argument<int> : public ArgumentBase {
    */
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
-           int defaultValue = 0)
+           int16_t defaultValue = 0)
       : ArgumentBase(name, shortName, description, required),
         value_(defaultValue) {}
 
@@ -407,7 +408,7 @@ class Argument<int> : public ArgumentBase {
   void setValidator(const Validator& validator) { validator_ = validator; }
 
   /**
-   * @brief Parse a string value into an integer
+   * @brief Parse a string value into a 16-bit integer
    *
    * @param value The string value to parse
    * @return true if parsing and validation were successful, false otherwise
@@ -423,11 +424,11 @@ class Argument<int> : public ArgumentBase {
     }
 
     // Check for overflow/underflow
-    if (errno == ERANGE || parsedValue > INT_MAX || parsedValue < INT_MIN) {
+    if (errno == ERANGE || parsedValue > INT16_MAX || parsedValue < INT16_MIN) {
       return false;
     }
 
-    value_ = static_cast<int>(parsedValue);
+    value_ = static_cast<int16_t>(parsedValue);
 
     if (validator_ && !validator_(value_)) {
       return false;
@@ -440,16 +441,16 @@ class Argument<int> : public ArgumentBase {
   /**
    * @brief Get the parsed value of this argument
    *
-   * @return int The parsed value
+   * @return int16_t The parsed value
    */
-  int getValue() const { return value_; }
+  int16_t getValue() const { return value_; }
 
  protected:
   /**
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override { return "(integer)"; }
+  std::string getTypeName() const override { return "(16-bit integer)"; }
 
   /**
    * @brief Get the default value as a string
@@ -468,29 +469,29 @@ class Argument<int> : public ArgumentBase {
 };
 
 /**
- * @brief Specialization for unsigned integer arguments
+ * @brief Specialization for 32-bit unsigned integer arguments
  *
- * This specialization handles unsigned integer arguments, which require
- * conversion from string to unsigned int during parsing.
+ * This specialization handles 32-bit unsigned integer arguments, which require
+ * conversion from string to uint32_t during parsing.
  */
 template <>
-class Argument<unsigned int> : public ArgumentBase {
+class Argument<uint32_t> : public ArgumentBase {
  public:
   /**
-   * @brief Validator function type for unsigned integer arguments
+   * @brief Validator function type for 32-bit unsigned integer arguments
    *
-   * A validator is a function that takes an unsigned integer value and returns
+   * A validator is a function that takes a uint32_t value and returns
    * true if the value is valid, false otherwise.
    */
-  using Validator = std::function<bool(unsigned int)>;
+  using Validator = std::function<bool(uint32_t)>;
 
  private:
-  unsigned int value_;
+  uint32_t value_;
   Validator validator_;
 
  public:
   /**
-   * @brief Construct a new Argument object for unsigned integer values
+   * @brief Construct a new Argument object for 32-bit unsigned integer values
    *
    * @param name The long name of the argument (e.g., "count")
    * @param shortName The short name of the argument (e.g., "c")
@@ -500,7 +501,7 @@ class Argument<unsigned int> : public ArgumentBase {
    */
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
-           unsigned int defaultValue = 0)
+           uint32_t defaultValue = 0)
       : ArgumentBase(name, shortName, description, required),
         value_(defaultValue) {}
 
@@ -513,7 +514,7 @@ class Argument<unsigned int> : public ArgumentBase {
   void setValidator(const Validator& validator) { validator_ = validator; }
 
   /**
-   * @brief Parse a string value into an unsigned integer
+   * @brief Parse a string value into a 32-bit unsigned integer
    *
    * @param value The string value to parse
    * @return true if parsing and validation were successful, false otherwise
@@ -531,7 +532,7 @@ class Argument<unsigned int> : public ArgumentBase {
     }
 
     // Check for overflow or negative values (strtoul would wrap negatives)
-    if (errno == ERANGE || parsedValue > UINT_MAX) {
+    if (errno == ERANGE || parsedValue > UINT32_MAX) {
       return false;
     }
 
@@ -540,7 +541,7 @@ class Argument<unsigned int> : public ArgumentBase {
       return false;
     }
 
-    value_ = static_cast<unsigned int>(parsedValue);
+    value_ = static_cast<uint32_t>(parsedValue);
 
     if (validator_ && !validator_(value_)) {
       return false;
@@ -553,16 +554,18 @@ class Argument<unsigned int> : public ArgumentBase {
   /**
    * @brief Get the parsed value of this argument
    *
-   * @return unsigned int The parsed value
+   * @return uint32_t The parsed value
    */
-  unsigned int getValue() const { return value_; }
+  uint32_t getValue() const { return value_; }
 
  protected:
   /**
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override { return "(unsigned integer)"; }
+  std::string getTypeName() const override {
+    return "(32-bit unsigned integer)";
+  }
 
   /**
    * @brief Get the default value as a string
@@ -581,29 +584,29 @@ class Argument<unsigned int> : public ArgumentBase {
 };
 
 /**
- * @brief Specialization for long integer arguments
+ * @brief Specialization for 32-bit integer arguments
  *
- * This specialization handles long integer arguments, which require
- * conversion from string to long during parsing.
+ * This specialization handles 32-bit integer arguments, which require
+ * conversion from string to int32_t during parsing.
  */
 template <>
-class Argument<long> : public ArgumentBase {
+class Argument<int32_t> : public ArgumentBase {
  public:
   /**
-   * @brief Validator function type for long integer arguments
+   * @brief Validator function type for 32-bit integer arguments
    *
-   * A validator is a function that takes a long integer value and returns
+   * A validator is a function that takes an int32_t value and returns
    * true if the value is valid, false otherwise.
    */
-  using Validator = std::function<bool(long)>;
+  using Validator = std::function<bool(int32_t)>;
 
  private:
-  long value_;
+  int32_t value_;
   Validator validator_;
 
  public:
   /**
-   * @brief Construct a new Argument object for long integer values
+   * @brief Construct a new Argument object for 32-bit integer values
    *
    * @param name The long name of the argument (e.g., "count")
    * @param shortName The short name of the argument (e.g., "c")
@@ -613,7 +616,7 @@ class Argument<long> : public ArgumentBase {
    */
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
-           long defaultValue = 0)
+           int32_t defaultValue = 0)
       : ArgumentBase(name, shortName, description, required),
         value_(defaultValue) {}
 
@@ -626,7 +629,7 @@ class Argument<long> : public ArgumentBase {
   void setValidator(const Validator& validator) { validator_ = validator; }
 
   /**
-   * @brief Parse a string value into a long integer
+   * @brief Parse a string value into a 32-bit integer
    *
    * @param value The string value to parse
    * @return true if parsing and validation were successful, false otherwise
@@ -642,11 +645,11 @@ class Argument<long> : public ArgumentBase {
     }
 
     // Check for overflow/underflow
-    if (errno == ERANGE) {
+    if (errno == ERANGE || parsedValue > INT32_MAX || parsedValue < INT32_MIN) {
       return false;
     }
 
-    value_ = parsedValue;
+    value_ = static_cast<int32_t>(parsedValue);
 
     if (validator_ && !validator_(value_)) {
       return false;
@@ -659,16 +662,16 @@ class Argument<long> : public ArgumentBase {
   /**
    * @brief Get the parsed value of this argument
    *
-   * @return long The parsed value
+   * @return int32_t The parsed value
    */
-  long getValue() const { return value_; }
+  int32_t getValue() const { return value_; }
 
  protected:
   /**
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override { return "(long integer)"; }
+  std::string getTypeName() const override { return "(32-bit integer)"; }
 
   /**
    * @brief Get the default value as a string
@@ -687,29 +690,29 @@ class Argument<long> : public ArgumentBase {
 };
 
 /**
- * @brief Specialization for unsigned long integer arguments
+ * @brief Specialization for 64-bit unsigned integer arguments
  *
- * This specialization handles unsigned long integer arguments, which require
- * conversion from string to unsigned long during parsing.
+ * This specialization handles 64-bit unsigned integer arguments, which require
+ * conversion from string to uint64_t during parsing.
  */
 template <>
-class Argument<unsigned long> : public ArgumentBase {
+class Argument<uint64_t> : public ArgumentBase {
  public:
   /**
-   * @brief Validator function type for unsigned long integer arguments
+   * @brief Validator function type for 64-bit unsigned integer arguments
    *
-   * A validator is a function that takes an unsigned long integer value and
-   * returns true if the value is valid, false otherwise.
+   * A validator is a function that takes a uint64_t value and returns
+   * true if the value is valid, false otherwise.
    */
-  using Validator = std::function<bool(unsigned long)>;
+  using Validator = std::function<bool(uint64_t)>;
 
  private:
-  unsigned long value_;
+  uint64_t value_;
   Validator validator_;
 
  public:
   /**
-   * @brief Construct a new Argument object for unsigned long integer values
+   * @brief Construct a new Argument object for 64-bit unsigned integer values
    *
    * @param name The long name of the argument (e.g., "count")
    * @param shortName The short name of the argument (e.g., "c")
@@ -719,7 +722,7 @@ class Argument<unsigned long> : public ArgumentBase {
    */
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
-           unsigned long defaultValue = 0)
+           uint64_t defaultValue = 0)
       : ArgumentBase(name, shortName, description, required),
         value_(defaultValue) {}
 
@@ -732,7 +735,7 @@ class Argument<unsigned long> : public ArgumentBase {
   void setValidator(const Validator& validator) { validator_ = validator; }
 
   /**
-   * @brief Parse a string value into an unsigned long integer
+   * @brief Parse a string value into a 64-bit unsigned integer
    *
    * @param value The string value to parse
    * @return true if parsing and validation were successful, false otherwise
@@ -741,16 +744,16 @@ class Argument<unsigned long> : public ArgumentBase {
    */
   bool parse(const std::string& value) override {
     char* end;
-    errno = 0;  // Reset errno before calling strtoul
-    unsigned long parsedValue = std::strtoul(value.c_str(), &end, 10);
+    errno = 0;  // Reset errno before calling strtoull
+    unsigned long long parsedValue = std::strtoull(value.c_str(), &end, 10);
 
     // Check if the entire string was consumed
     if (*end != '\0') {
       return false;
     }
 
-    // Check for overflow
-    if (errno == ERANGE) {
+    // Check for overflow or negative values (strtoull would wrap negatives)
+    if (errno == ERANGE || parsedValue > UINT64_MAX) {
       return false;
     }
 
@@ -759,7 +762,7 @@ class Argument<unsigned long> : public ArgumentBase {
       return false;
     }
 
-    value_ = parsedValue;
+    value_ = static_cast<uint64_t>(parsedValue);
 
     if (validator_ && !validator_(value_)) {
       return false;
@@ -772,16 +775,18 @@ class Argument<unsigned long> : public ArgumentBase {
   /**
    * @brief Get the parsed value of this argument
    *
-   * @return unsigned long The parsed value
+   * @return uint64_t The parsed value
    */
-  unsigned long getValue() const { return value_; }
+  uint64_t getValue() const { return value_; }
 
  protected:
   /**
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override { return "(unsigned long integer)"; }
+  std::string getTypeName() const override {
+    return "(64-bit unsigned integer)";
+  }
 
   /**
    * @brief Get the default value as a string
@@ -800,16 +805,123 @@ class Argument<unsigned long> : public ArgumentBase {
 };
 
 /**
- * @brief Specialization for float arguments
+ * @brief Specialization for 64-bit integer arguments
  *
- * This specialization handles float arguments, which require
- * conversion from string to float during parsing.
+ * This specialization handles 64-bit integer arguments, which require
+ * conversion from string to int64_t during parsing.
+ */
+template <>
+class Argument<int64_t> : public ArgumentBase {
+ public:
+  /**
+   * @brief Validator function type for 64-bit integer arguments
+   *
+   * A validator is a function that takes an int64_t value and returns
+   * true if the value is valid, false otherwise.
+   */
+  using Validator = std::function<bool(int64_t)>;
+
+ private:
+  int64_t value_;
+  Validator validator_;
+
+ public:
+  /**
+   * @brief Construct a new Argument object for 64-bit integer values
+   *
+   * @param name The long name of the argument (e.g., "count")
+   * @param shortName The short name of the argument (e.g., "c")
+   * @param description A description of the argument for help text
+   * @param required Whether this argument is required (default: false)
+   * @param defaultValue The default value for this argument (default: 0)
+   */
+  Argument(const std::string& name, const std::string& shortName,
+           const std::string& description, bool required = false,
+           int64_t defaultValue = 0)
+      : ArgumentBase(name, shortName, description, required),
+        value_(defaultValue) {}
+
+  /**
+   * @brief Set a validator function for this argument
+   *
+   * The validator function will be called during parsing to validate the value.
+   * @param validator The validator function to use
+   */
+  void setValidator(const Validator& validator) { validator_ = validator; }
+
+  /**
+   * @brief Parse a string value into a 64-bit integer
+   *
+   * @param value The string value to parse
+   * @return true if parsing and validation were successful, false otherwise
+   */
+  bool parse(const std::string& value) override {
+    char* end;
+    errno = 0;  // Reset errno before calling strtoll
+    long long parsedValue = std::strtoll(value.c_str(), &end, 10);
+
+    // Check if the entire string was consumed
+    if (*end != '\0') {
+      return false;
+    }
+
+    // Check for overflow/underflow
+    if (errno == ERANGE || parsedValue > INT64_MAX || parsedValue < INT64_MIN) {
+      return false;
+    }
+
+    value_ = static_cast<int64_t>(parsedValue);
+
+    if (validator_ && !validator_(value_)) {
+      return false;
+    }
+
+    isSet_ = true;
+    return true;
+  }
+
+  /**
+   * @brief Get the parsed value of this argument
+   *
+   * @return int64_t The parsed value
+   */
+  int64_t getValue() const { return value_; }
+
+ protected:
+  /**
+   * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
+   * @return The type name or empty string if no type name should be displayed
+   */
+  std::string getTypeName() const override { return "(64-bit integer)"; }
+
+  /**
+   * @brief Get the default value as a string
+   * @return String representation of the default value or empty string if no
+   * default
+   */
+  std::string getDefaultString() const override {
+    return std::to_string(value_);
+  }
+
+  /**
+   * @brief Check if the argument has a default value that should be displayed
+   * @return true if a default value should be shown, false otherwise
+   */
+  bool hasDefaultValue() const override { return value_ != 0; }
+};
+
+/**
+ * @brief Specialization for single-precision floating-point arguments
+ *
+ * This specialization handles single-precision floating-point arguments, which
+ * require conversion from string to float during parsing.
  */
 template <>
 class Argument<float> : public ArgumentBase {
  public:
   /**
-   * @brief Validator function type for float arguments
+   * @brief Validator function type for single-precision floating-point
+   * arguments
    *
    * A validator is a function that takes a float value and returns
    * true if the value is valid, false otherwise.
@@ -822,7 +934,8 @@ class Argument<float> : public ArgumentBase {
 
  public:
   /**
-   * @brief Construct a new Argument object for float values
+   * @brief Construct a new Argument object for single-precision floating-point
+   * values
    *
    * @param name The long name of the argument (e.g., "rate")
    * @param shortName The short name of the argument (e.g., "r")
@@ -845,7 +958,7 @@ class Argument<float> : public ArgumentBase {
   void setValidator(const Validator& validator) { validator_ = validator; }
 
   /**
-   * @brief Parse a string value into a float
+   * @brief Parse a string value into a single-precision floating-point number
    *
    * @param value The string value to parse
    * @return true if parsing and validation were successful, false otherwise
@@ -921,16 +1034,17 @@ class Argument<float> : public ArgumentBase {
 };
 
 /**
- * @brief Specialization for double arguments
+ * @brief Specialization for double-precision floating-point arguments
  *
- * This specialization handles double arguments, which require
- * conversion from string to double during parsing.
+ * This specialization handles double-precision floating-point arguments, which
+ * require conversion from string to double during parsing.
  */
 template <>
 class Argument<double> : public ArgumentBase {
  public:
   /**
-   * @brief Validator function type for double arguments
+   * @brief Validator function type for double-precision floating-point
+   * arguments
    *
    * A validator is a function that takes a double value and returns
    * true if the value is valid, false otherwise.
@@ -943,7 +1057,8 @@ class Argument<double> : public ArgumentBase {
 
  public:
   /**
-   * @brief Construct a new Argument object for double values
+   * @brief Construct a new Argument object for double-precision floating-point
+   * values
    *
    * @param name The long name of the argument (e.g., "precision")
    * @param shortName The short name of the argument (e.g., "p")
@@ -966,7 +1081,7 @@ class Argument<double> : public ArgumentBase {
   void setValidator(const Validator& validator) { validator_ = validator; }
 
   /**
-   * @brief Parse a string value into a double
+   * @brief Parse a string value into a double-precision floating-point number
    *
    * @param value The string value to parse
    * @return true if parsing and validation were successful, false otherwise

@@ -5,7 +5,7 @@ A simple, header-only command line argument parser library for modern C++ (C++17
 ## Features
 
 - Header-only library for easy integration
-- Support for various argument types (string, integer, floating point, boolean flags)
+- Support for various argument types (string, fixed-width integers, floating point, boolean flags)
 - Required and optional arguments
 - Default values for arguments
 - Custom validators for arguments
@@ -38,8 +38,7 @@ int main(int argc, char* argv[]) {
     // Add an optional string argument with default value
     auto* outputFile = parser.addArgument<std::string>("output", "o", "Output file path", false, "output.txt");
     
-    // Add an optional integer argument with default value
-    auto* count = parser.addArgument<int>("count", "c", "Number of iterations", false, 1);
+    // Add an optional integer argument with default value\n    auto* count = parser.addArgument<int32_t>(\"count\", \"c\", \"Number of iterations\", false, 1);
     
     // Add floating point arguments
     auto* rate = parser.addArgument<float>("rate", "r", "Processing rate", false, 1.0f);
@@ -88,7 +87,7 @@ int main(int argc, char* argv[]) {
 
 ```cpp
 // Add a validator to ensure count is positive
-count->setValidator([](int value) { return value > 0; });
+count->setValidator([](int32_t value) { return value > 0; });
 
 // Add validators for floating point values
 rate->setValidator([](float value) { return value > 0.0f; });
