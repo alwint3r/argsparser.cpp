@@ -866,7 +866,7 @@ class Argument<int64_t> : public ArgumentBase {
     }
 
     // Check for overflow/underflow
-    if (errno == ERANGE) {
+    if (errno == ERANGE || parsedValue > INT64_MAX || parsedValue < INT64_MIN) {
       return false;
     }
 
