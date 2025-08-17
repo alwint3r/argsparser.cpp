@@ -1,8 +1,8 @@
 #ifndef ARGSPARSER_HPP
 #define ARGSPARSER_HPP
 
+#include <array>
 #include <cerrno>   // For errno
-#include <climits>  // For INT_MAX and INT_MIN
 #include <cstdint>  // For fixed-width integer types
 #include <cstdio>   // For snprintf
 #include <cstdlib>  // For atoi
@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace argsparser {
@@ -18,7 +19,7 @@ namespace argsparser {
 /**
  * @brief Error codes for argument parsing results
  */
-enum class ParseResult {
+enum class ParseResult : std::uint8_t {
   SUCCESS = 0,     ///< Parsing completed successfully
   UNKNOWN_OPTION,  ///< An unknown option was provided
   MISSING_VALUE,   ///< A required value is missing
@@ -38,8 +39,8 @@ class ArgumentBase {
   std::string name_;
   std::string shortName_;
   std::string description_;
-  bool isSet_;
-  bool isRequired_;
+  bool isSet_{false};
+  bool isRequired_{false};
 
  public:
   /**
@@ -49,19 +50,42 @@ class ArgumentBase {
    * @param shortName The short name of the argument
    * @param description The description of the argument
    * @param required Whether the argument is required
-   */
+   *
+   */ // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
   ArgumentBase(const std::string& name, const std::string& shortName,
                const std::string& description, bool required)
       : name_(name),
         shortName_(shortName),
         description_(description),
-        isSet_(false),
         isRequired_(required) {}
 
   /**
    * @brief Virtual destructor for proper cleanup
    */
   virtual ~ArgumentBase() = default;
+
+  // Explicitly declare special member functions to comply with
+  // cppcoreguidelines-special-member-functions
+
+  /**
+   * @brief Copy constructor (deleted)
+   */
+  ArgumentBase(const ArgumentBase&) = delete;
+
+  /**
+   * @brief Copy assignment operator (deleted)
+   */
+  ArgumentBase& operator=(const ArgumentBase&) = delete;
+
+  /**
+   * @brief Move constructor (deleted)
+   */
+  ArgumentBase(ArgumentBase&&) = delete;
+
+  /**
+   * @brief Move assignment operator (deleted)
+   */
+  ArgumentBase& operator=(ArgumentBase&&) = delete;
 
   /**
    * @brief Parse a string value into the argument's type
@@ -80,51 +104,53 @@ class ArgumentBase {
    * @brief Check if this argument has been set
    * @return true if the argument was provided, false otherwise
    */
-  bool isSet() const { return isSet_; }
+  [[nodiscard]] bool isSet() const { return isSet_; }
 
   /**
    * @brief Check if this argument is required
    * @return true if the argument is required, false otherwise
    */
-  bool isRequired() const { return isRequired_; }
+  [[nodiscard]] bool isRequired() const { return isRequired_; }
 
   /**
    * @brief Get the name of this argument
    * @return The argument's name
    */
-  const std::string& getName() const { return name_; }
+  [[nodiscard]] const std::string& getName() const { return name_; }
 
   /**
    * @brief Get the short name of this argument
    * @return The argument's short name
    */
-  const std::string& getShortName() const { return shortName_; }
+  [[nodiscard]] const std::string& getShortName() const { return shortName_; }
 
   /**
    * @brief Get the description of this argument
    * @return The argument's description
    */
-  const std::string& getDescription() const { return description_; }
+  [[nodiscard]] const std::string& getDescription() const {
+    return description_;
+  }
 
  protected:
   /**
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  virtual std::string getTypeName() const { return ""; }
+  [[nodiscard]] virtual std::string getTypeName() const { return ""; }
 
   /**
    * @brief Get the default value as a string
    * @return String representation of the default value or empty string if no
    * default
    */
-  virtual std::string getDefaultString() const { return ""; }
+  [[nodiscard]] virtual std::string getDefaultString() const { return ""; }
 
   /**
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  virtual bool hasDefaultValue() const { return false; }
+  [[nodiscard]] virtual bool hasDefaultValue() const { return false; }
 };
 
 /**
@@ -279,7 +305,7 @@ class Argument<std::string> : public ArgumentBase {
    *
    * @return const std::string& The parsed value
    */
-  const std::string& getValue() const { return value_; }
+  [[nodiscard]] const std::string& getValue() const { return value_; }
 
  protected:
   /**
@@ -287,13 +313,15 @@ class Argument<std::string> : public ArgumentBase {
    * @return String representation of the default value or empty string if no
    * default
    */
-  std::string getDefaultString() const override { return value_; }
+  [[nodiscard]] std::string getDefaultString() const override { return value_; }
 
   /**
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override { return !value_.empty(); }
+  [[nodiscard]] bool hasDefaultValue() const override {
+    return !value_.empty();
+  }
 };
 
 /**
@@ -345,7 +373,7 @@ class Argument<bool> : public ArgumentBase {
    *
    * @return bool The parsed value (true if flag was present)
    */
-  bool getValue() const { return value_; }
+  [[nodiscard]] bool getValue() const { return value_; }
 
  protected:
   /**
@@ -353,13 +381,15 @@ class Argument<bool> : public ArgumentBase {
    * @return String representation of the default value or empty string if no
    * default
    */
-  std::string getDefaultString() const override { return value_ ? "true" : ""; }
+  [[nodiscard]] std::string getDefaultString() const override {
+    return value_ ? "true" : "";
+  }
 
   /**
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override { return value_; }
+  [[nodiscard]] bool hasDefaultValue() const override { return value_; }
 };
 
 /**
@@ -414,9 +444,10 @@ class Argument<int16_t> : public ArgumentBase {
    * @return true if parsing and validation were successful, false otherwise
    */
   bool parse(const std::string& value) override {
-    char* end;
+    char* end = nullptr;
     errno = 0;  // Reset errno before calling strtol
-    long parsedValue = std::strtol(value.c_str(), &end, 10);
+    constexpr auto radix = 10;
+    const long parsedValue = std::strtol(value.c_str(), &end, radix);
 
     // Check if the entire string was consumed
     if (*end != '\0') {
@@ -443,29 +474,40 @@ class Argument<int16_t> : public ArgumentBase {
    *
    * @return int16_t The parsed value
    */
-  int16_t getValue() const { return value_; }
+  [[nodiscard]] int16_t getValue() const { return value_; }
 
  protected:
   /**
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override { return "(16-bit integer)"; }
+  [[nodiscard]] std::string getTypeName() const override {
+    return "(16-bit integer)";
+  }
 
   /**
+
    * @brief Get the default value as a string
+
    * @return String representation of the default value or empty string if no
+
    * default
+
    */
-  std::string getDefaultString() const override {
+
+  [[nodiscard]] std::string getDefaultString() const override {
     return std::to_string(value_);
   }
 
   /**
+
    * @brief Check if the argument has a default value that should be displayed
+
    * @return true if a default value should be shown, false otherwise
+
    */
-  bool hasDefaultValue() const override { return value_ != 0; }
+
+  [[nodiscard]] bool hasDefaultValue() const override { return value_ != 0; }
 };
 
 /**
@@ -522,9 +564,10 @@ class Argument<uint32_t> : public ArgumentBase {
    * unsigned type.
    */
   bool parse(const std::string& value) override {
-    char* end;
+    char* end = nullptr;
     errno = 0;  // Reset errno before calling strtoul
-    unsigned long parsedValue = std::strtoul(value.c_str(), &end, 10);
+    constexpr auto radix = 10;
+    const unsigned long parsedValue = std::strtoul(value.c_str(), &end, radix);
 
     // Check if the entire string was consumed
     if (*end != '\0') {
@@ -556,14 +599,14 @@ class Argument<uint32_t> : public ArgumentBase {
    *
    * @return uint32_t The parsed value
    */
-  uint32_t getValue() const { return value_; }
+  [[nodiscard]] uint32_t getValue() const { return value_; }
 
  protected:
   /**
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override {
+  [[nodiscard]] std::string getTypeName() const override {
     return "(32-bit unsigned integer)";
   }
 
@@ -572,7 +615,7 @@ class Argument<uint32_t> : public ArgumentBase {
    * @return String representation of the default value or empty string if no
    * default
    */
-  std::string getDefaultString() const override {
+  [[nodiscard]] std::string getDefaultString() const override {
     return std::to_string(value_);
   }
 
@@ -580,7 +623,7 @@ class Argument<uint32_t> : public ArgumentBase {
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override { return value_ != 0; }
+  [[nodiscard]] bool hasDefaultValue() const override { return value_ != 0; }
 };
 
 /**
@@ -635,9 +678,10 @@ class Argument<int32_t> : public ArgumentBase {
    * @return true if parsing and validation were successful, false otherwise
    */
   bool parse(const std::string& value) override {
-    char* end;
+    char* end = nullptr;
     errno = 0;  // Reset errno before calling strtol
-    long parsedValue = std::strtol(value.c_str(), &end, 10);
+    constexpr auto radix = 10;
+    const long parsedValue = std::strtol(value.c_str(), &end, radix);
 
     // Check if the entire string was consumed
     if (*end != '\0') {
@@ -664,21 +708,23 @@ class Argument<int32_t> : public ArgumentBase {
    *
    * @return int32_t The parsed value
    */
-  int32_t getValue() const { return value_; }
+  [[nodiscard]] int32_t getValue() const { return value_; }
 
  protected:
   /**
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override { return "(32-bit integer)"; }
+  [[nodiscard]] std::string getTypeName() const override {
+    return "(32-bit integer)";
+  }
 
   /**
    * @brief Get the default value as a string
    * @return String representation of the default value or empty string if no
    * default
    */
-  std::string getDefaultString() const override {
+  [[nodiscard]] std::string getDefaultString() const override {
     return std::to_string(value_);
   }
 
@@ -686,7 +732,7 @@ class Argument<int32_t> : public ArgumentBase {
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override { return value_ != 0; }
+  [[nodiscard]] bool hasDefaultValue() const override { return value_ != 0; }
 };
 
 /**
@@ -743,9 +789,11 @@ class Argument<uint64_t> : public ArgumentBase {
    * unsigned type.
    */
   bool parse(const std::string& value) override {
-    char* end;
+    char* end = nullptr;
     errno = 0;  // Reset errno before calling strtoull
-    unsigned long long parsedValue = std::strtoull(value.c_str(), &end, 10);
+    constexpr auto radix = 10;
+    const unsigned long long parsedValue =
+        std::strtoull(value.c_str(), &end, radix);
 
     // Check if the entire string was consumed
     if (*end != '\0') {
@@ -777,14 +825,14 @@ class Argument<uint64_t> : public ArgumentBase {
    *
    * @return uint64_t The parsed value
    */
-  uint64_t getValue() const { return value_; }
+  [[nodiscard]] uint64_t getValue() const { return value_; }
 
  protected:
   /**
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override {
+  [[nodiscard]] std::string getTypeName() const override {
     return "(64-bit unsigned integer)";
   }
 
@@ -793,7 +841,7 @@ class Argument<uint64_t> : public ArgumentBase {
    * @return String representation of the default value or empty string if no
    * default
    */
-  std::string getDefaultString() const override {
+  [[nodiscard]] std::string getDefaultString() const override {
     return std::to_string(value_);
   }
 
@@ -801,7 +849,7 @@ class Argument<uint64_t> : public ArgumentBase {
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override { return value_ != 0; }
+  [[nodiscard]] bool hasDefaultValue() const override { return value_ != 0; }
 };
 
 /**
@@ -856,9 +904,10 @@ class Argument<int64_t> : public ArgumentBase {
    * @return true if parsing and validation were successful, false otherwise
    */
   bool parse(const std::string& value) override {
-    char* end;
+    char* end = nullptr;
     errno = 0;  // Reset errno before calling strtoll
-    long long parsedValue = std::strtoll(value.c_str(), &end, 10);
+    constexpr auto radix = 10;
+    const long long parsedValue = std::strtoll(value.c_str(), &end, radix);
 
     // Check if the entire string was consumed
     if (*end != '\0') {
@@ -885,21 +934,23 @@ class Argument<int64_t> : public ArgumentBase {
    *
    * @return int64_t The parsed value
    */
-  int64_t getValue() const { return value_; }
+  [[nodiscard]] int64_t getValue() const { return value_; }
 
  protected:
   /**
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override { return "(64-bit integer)"; }
+  [[nodiscard]] std::string getTypeName() const override {
+    return "(64-bit integer)";
+  }
 
   /**
    * @brief Get the default value as a string
    * @return String representation of the default value or empty string if no
    * default
    */
-  std::string getDefaultString() const override {
+  [[nodiscard]] std::string getDefaultString() const override {
     return std::to_string(value_);
   }
 
@@ -907,7 +958,7 @@ class Argument<int64_t> : public ArgumentBase {
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override { return value_ != 0; }
+  [[nodiscard]] bool hasDefaultValue() const override { return value_ != 0; }
 };
 
 /**
@@ -945,7 +996,7 @@ class Argument<float> : public ArgumentBase {
    */
   Argument(const std::string& name, const std::string& shortName,
            const std::string& description, bool required = false,
-           float defaultValue = 0.0f)
+           float defaultValue = 0.0F)
       : ArgumentBase(name, shortName, description, required),
         value_(defaultValue) {}
 
@@ -966,9 +1017,9 @@ class Argument<float> : public ArgumentBase {
    * decimal formats.
    */
   bool parse(const std::string& value) override {
-    char* end;
+    char* end = nullptr;
     errno = 0;  // Reset errno before calling strtof
-    float parsedValue = std::strtof(value.c_str(), &end);
+    const float parsedValue = std::strtof(value.c_str(), &end);
 
     // Check if the entire string was consumed
     if (*end != '\0') {
@@ -995,28 +1046,32 @@ class Argument<float> : public ArgumentBase {
    *
    * @return float The parsed value
    */
-  float getValue() const { return value_; }
+  [[nodiscard]] float getValue() const { return value_; }
 
  protected:
   /**
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override { return "(float)"; }
+  [[nodiscard]] std::string getTypeName() const override { return "(float)"; }
 
   /**
    * @brief Format a float value to a string without trailing zeros
    * @param value The float value to format
    * @return Formatted string representation
    */
-  std::string formatFloat(float value) const {
-    char buffer[32];
-    int len = std::snprintf(buffer, sizeof(buffer), "%.6g", value);
-    if (len < 0 || static_cast<std::size_t>(len) >= sizeof(buffer)) {
+  static std::string formatFloat(float value) {
+    constexpr size_t size = 32;
+    std::array<char, size> buffer{};
+    int len = std::snprintf(buffer.data(), buffer.size(), "%.6g", value);
+    if (len < 0 || static_cast<std::size_t>(len) >= buffer.size()) {
       // Fallback to scientific notation if buffer is too small
-      std::snprintf(buffer, sizeof(buffer), "%.6e", value);
+      len = std::snprintf(buffer.data(), buffer.size(), "%.6e", value);
+      if (len < 0 || static_cast<std::size_t>(len) >= buffer.size()) {
+        return std::string{};
+      }
     }
-    return std::string(buffer);
+    return {buffer.begin(), buffer.begin() + len};
   }
 
   /**
@@ -1024,13 +1079,15 @@ class Argument<float> : public ArgumentBase {
    * @return String representation of the default value or empty string if no
    * default
    */
-  std::string getDefaultString() const override { return formatFloat(value_); }
+  [[nodiscard]] std::string getDefaultString() const override {
+    return Argument<float>::formatFloat(value_);
+  }
 
   /**
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override { return value_ != 0.0f; }
+  [[nodiscard]] bool hasDefaultValue() const override { return value_ != 0.0F; }
 };
 
 /**
@@ -1089,9 +1146,9 @@ class Argument<double> : public ArgumentBase {
    * decimal formats.
    */
   bool parse(const std::string& value) override {
-    char* end;
+    char* end = nullptr;
     errno = 0;  // Reset errno before calling strtod
-    double parsedValue = std::strtod(value.c_str(), &end);
+    const double parsedValue = std::strtod(value.c_str(), &end);
 
     // Check if the entire string was consumed
     if (*end != '\0') {
@@ -1118,28 +1175,32 @@ class Argument<double> : public ArgumentBase {
    *
    * @return double The parsed value
    */
-  double getValue() const { return value_; }
+  [[nodiscard]] double getValue() const { return value_; }
 
  protected:
   /**
    * @brief Get the type name for this argument (e.g., "(integer)", "(float)")
    * @return The type name or empty string if no type name should be displayed
    */
-  std::string getTypeName() const override { return "(double)"; }
+  [[nodiscard]] std::string getTypeName() const override { return "(double)"; }
 
   /**
    * @brief Format a double value to a string without trailing zeros
    * @param value The double value to format
    * @return Formatted string representation
    */
-  std::string formatDouble(double value) const {
-    char buffer[32];
-    int len = std::snprintf(buffer, sizeof(buffer), "%.15g", value);
-    if (len < 0 || static_cast<std::size_t>(len) >= sizeof(buffer)) {
+  static std::string formatDouble(double value) {
+    constexpr size_t size = 32;
+    std::array<char, size> buffer{};
+    int len = std::snprintf(buffer.data(), buffer.size(), "%.15g", value);
+    if (len < 0 || static_cast<std::size_t>(len) >= buffer.size()) {
       // Fallback to scientific notation if buffer is too small
-      std::snprintf(buffer, sizeof(buffer), "%.15e", value);
+      len = std::snprintf(buffer.data(), buffer.size(), "%.15e", value);
+      if (len < 0 || static_cast<std::size_t>(len) >= buffer.size()) {
+        return std::string{};
+      }
     }
-    return std::string(buffer);
+    return {buffer.begin(), buffer.begin() + len};
   }
 
   /**
@@ -1147,13 +1208,15 @@ class Argument<double> : public ArgumentBase {
    * @return String representation of the default value or empty string if no
    * default
    */
-  std::string getDefaultString() const override { return formatDouble(value_); }
+  [[nodiscard]] std::string getDefaultString() const override {
+    return Argument<double>::formatDouble(value_);
+  }
 
   /**
    * @brief Check if the argument has a default value that should be displayed
    * @return true if a default value should be shown, false otherwise
    */
-  bool hasDefaultValue() const override { return value_ != 0.0; }
+  [[nodiscard]] bool hasDefaultValue() const override { return value_ != 0.0; }
 };
 
 /**
@@ -1172,14 +1235,14 @@ inline void ArgumentBase::printHelp(std::ostream& os) const {
   os << "\n    " << description_;
 
   // Add type name if applicable
-  std::string typeName = getTypeName();
+  const std::string typeName = getTypeName();
   if (!typeName.empty()) {
     os << " " << typeName;
   }
 
   // Add default value if applicable
   if (hasDefaultValue()) {
-    std::string defaultStr = getDefaultString();
+    const std::string defaultStr = getDefaultString();
     if (!defaultStr.empty()) {
       os << " (default: " << defaultStr << ")";
     }
@@ -1210,7 +1273,7 @@ class Parser {
    *
    * @param programName The name of the program (used in help text)
    * @param description A description of the program (used in help text)
-   */
+   */ // NOLINTNEXTLINE(bugprone-easily-swappable-parameters,hicpp-explicit-conversions)
   Parser(const std::string& programName, const std::string& description = "")
       : programName_(programName), description_(description) {}
 
@@ -1219,7 +1282,7 @@ class Parser {
    *
    * @return const std::string& The last error message
    */
-  const std::string& getLastError() const { return lastError_; }
+  [[nodiscard]] const std::string& getLastError() const { return lastError_; }
 
   /**
    * @brief Add a new argument to the parser
@@ -1280,14 +1343,15 @@ class Parser {
    * @note Supports both long options (--) and short options (-), including
    * grouped short options (-abc) and options with values (--option=value or
    * -ovalue).
-   */
-  ParseResult parse(int argc, char* argv[]) {
+   */ // NOLINTNEXTLINE(readability-function-cognitive-complexity)
+  ParseResult parse(int argc, char** argv) {
     // Clear the last error
     lastError_.clear();
 
     // Check for help flag first
     for (int i = 1; i < argc; ++i) {
-      std::string arg = argv[i];
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+      const std::string arg{argv[i]};
       if (arg == "--help" || arg == "-h") {
         return ParseResult::HELP_REQUESTED;
       }
@@ -1298,7 +1362,8 @@ class Parser {
 
     // Parse arguments
     for (int i = 1; i < argc; ++i) {
-      std::string arg = argv[i];
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+      const std::string arg{argv[i]};
 
       if (arg.empty() || arg[0] != '-') {
         // Positional argument
@@ -1310,11 +1375,11 @@ class Parser {
       std::string name;
       std::string value;
       bool hasValue = false;
-      bool isLong = (arg.length() > 1 && arg[1] == '-');
+      const bool isLong = (arg.length() > 1 && arg[1] == '-');
 
       if (isLong) {
         // Long option
-        size_t equalPos = arg.find('=');
+        const size_t equalPos = arg.find('=');
         if (equalPos != std::string::npos) {
           // --option=value format
           name = arg.substr(2, equalPos - 2);
@@ -1330,12 +1395,12 @@ class Parser {
         // option with a value (e.g., -c123)
         if (arg.length() > 2) {
           // Extract the first character as the short option name
-          std::string firstChar = arg.substr(1, 1);
+          const std::string firstChar = arg.substr(1, 1);
           auto it = shortNameMap_.find(firstChar);
 
           // Check if the first character corresponds to a non-boolean argument
           if (it != shortNameMap_.end() &&
-              !dynamic_cast<Argument<bool>*>(it->second)) {
+              dynamic_cast<Argument<bool>*>(it->second) == nullptr) {
             // This is a short option with a value (e.g., -c123)
             name = firstChar;
             value = arg.substr(2);
@@ -1344,10 +1409,10 @@ class Parser {
             // This might be a grouped short option
             bool isGrouped = true;
             for (size_t j = 1; j < arg.length(); ++j) {
-              std::string shortName(1, arg[j]);
+              const std::string shortName(1, arg[j]);
               auto it = shortNameMap_.find(shortName);
               if (it == shortNameMap_.end() ||
-                  !dynamic_cast<Argument<bool>*>(it->second)) {
+                  dynamic_cast<Argument<bool>*>(it->second) == nullptr) {
                 // If any character doesn't correspond to a boolean flag,
                 // treat the whole thing as a single short option
                 isGrouped = false;
@@ -1358,7 +1423,7 @@ class Parser {
             if (isGrouped) {
               // Process each character as a separate boolean flag
               for (size_t j = 1; j < arg.length(); ++j) {
-                std::string shortName(1, arg[j]);
+                const std::string shortName(1, arg[j]);
                 auto it = shortNameMap_.find(shortName);
                 ArgumentBase* argument = it->second;
 
@@ -1394,14 +1459,14 @@ class Parser {
         }
       }
 
-      if (!argument) {
+      if (argument == nullptr) {
         lastError_ =
             std::string("Unknown option: ") + (isLong ? "--" : "-") + name;
         return ParseResult::UNKNOWN_OPTION;
       }
 
       // Handle boolean flags (no value expected)
-      if (dynamic_cast<Argument<bool>*>(argument)) {
+      if (dynamic_cast<Argument<bool>*>(argument) != nullptr) {
         if (!argument->parse("true")) {
           lastError_ = std::string("Invalid value for flag: ") +
                        (isLong ? "--" : "-") + name;
@@ -1418,12 +1483,17 @@ class Parser {
                        (isLong ? "--" : "-") + name;
           return ParseResult::MISSING_VALUE;
         }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         value = argv[++i];
       }
 
       if (!argument->parse(value)) {
-        lastError_ = std::string("Invalid value for option: ") +
-                     (isLong ? "--" : "-") + name + " = " + value;
+        std::string error = "Invalid value for option: ";
+        error += (isLong ? "--" : "-");
+        error += name;
+        error += " = ";
+        error += value;
+        lastError_ = std::move(error);
         return ParseResult::INVALID_VALUE;
       }
     }
@@ -1478,7 +1548,7 @@ class Parser {
     os << "Usage: " << programName_;
 
     // Print options
-    bool hasOptions = !arguments_.empty();
+    const bool hasOptions = !arguments_.empty();
     if (hasOptions) {
       os << " [OPTIONS]";
     }
@@ -1528,7 +1598,7 @@ class Parser {
    * @return true if the argument was provided, false otherwise
    * @note Works for both option arguments and positional arguments.
    */
-  bool isSet(const std::string& name) const {
+  [[nodiscard]] bool isSet(const std::string& name) const {
     // Check option arguments first
     auto it = longNameMap_.find(name);
     if (it != longNameMap_.end()) {

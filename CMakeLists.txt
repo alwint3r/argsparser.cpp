@@ -5,21 +5,21 @@ project(ArgsParser VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Enable clang-tidy if available and requested
-option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis" OFF)
-if(ENABLE_CLANG_TIDY)
-  find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-  if(CLANG_TIDY_EXE)
-    message(STATUS "Found clang-tidy: ${CLANG_TIDY_EXE}")
-    # Only enable specific, non-conflicting checks to avoid conflicts with project design
-    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}" 
-        "-checks=bugprone-*,performance-*,readability-*,modernize-*,-bugprone-easily-swappable-parameters,-readability-identifier-naming,-modernize-use-trailing-return-type,-readability-function-cognitive-complexity"
-        "-header-filter=include/.*"
-        "-warnings-as-errors=bugprone-*,performance-*,readability-*,modernize-*")
-  else()
-    message(STATUS "clang-tidy not found.")
-  endif()
-endif()
+# # Enable clang-tidy if available and requested
+# option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis" OFF)
+# if(ENABLE_CLANG_TIDY)
+#   find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+#   if(CLANG_TIDY_EXE)
+#     message(STATUS "Found clang-tidy: ${CLANG_TIDY_EXE}")
+#     # Only enable specific, non-conflicting checks to avoid conflicts with project design
+#     set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}" 
+#         "-checks=bugprone-*,performance-*,readability-*,modernize-*,-bugprone-easily-swappable-parameters,-readability-identifier-naming,-modernize-use-trailing-return-type,-readability-function-cognitive-complexity"
+#         "-header-filter=include/.*"
+#         "-warnings-as-errors=bugprone-*,performance-*,readability-*,modernize-*")
+#   else()
+#     message(STATUS "clang-tidy not found.")
+#   endif()
+# endif()
 
 # Include directories
 include_directories(include)
