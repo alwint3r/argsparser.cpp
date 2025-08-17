@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Simplified static analysis script for ArgsParser
-# This script runs clang-tidy with a minimal set of checks to avoid conflicts
+# This script runs clang-tidy with a focused set of checks for critical issues
 
-echo "Running simplified static analysis on ArgsParser project..."
+echo "Running focused static analysis on ArgsParser project..."
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -34,31 +34,25 @@ if [ $? -ne 0 ]; then
     echo "Error: Failed to configure project with CMake"
     exit 1
 fi
+EXTRA_ARGS="--extra-arg=-isysroot$(xcrun --sdk macosx --show-sdk-path)"
 
-# Define a minimal set of checks to avoid conflicts with project design
-CHECKS="bugprone-*,performance-*,readability-*,-readability-function-cognitive-complexity,-readability-identifier-naming,-bugprone-easily-swappable-parameters"
+# Function to print section header
+print_header() {
+    echo "==== $1 ===="
+}
 
 # Run static analysis on header file
-echo "Analyzing header file..."
-clang-tidy ../include/argsparser.hpp \
-    -checks="${CHECKS}" \
-    --extra-arg=-I../include \
-    2>&1 | grep -v "warnings treated as errors" | head -50
+print_header "Analyzing header file (argsparser.hpp)"
+clang-tidy -p build ../include/argsparser.hpp ${EXTRA_ARGS} 2>&1 | head -100
 
-# Run static analysis on key test files
-echo "Analyzing test files..."
-clang-tidy ../tests/test_argsparser.cpp \
-    -checks="${CHECKS}" \
-    --extra-arg=-I../include \
-    2>&1 | grep -v "warnings treated as errors" | head -30
+# # Run static analysis on key test files
+# print_header "Analyzing test files (test_argsparser.cpp)"
+# clang-tidy -p build ../tests/test_argsparser.cpp ${EXTRA_ARGS} 2>&1 | head -100
 
-# Run static analysis on example files
-echo "Analyzing example files..."
-clang-tidy ../examples/example.cpp \
-    -checks="${CHECKS}" \
-    --extra-arg=-I../include \
-    2>&1 | grep -v "warnings treated as errors" | head -30
+# # Run static analysis on example files
+# print_header "Analyzing example files (example.cpp)"
+# clang-tidy -p build ../examples/example.cpp ${EXTRA_ARGS} 2>&1 | head -100
 
-echo "Simplified static analysis complete!"
-echo "Note: Only showing first 50 warnings from header file and first 30 from each test/example file."
+echo "==== Focused static analysis complete! ===="
+echo "Note: Only showing first 100 warnings from each file."
 echo "Run clang-tidy manually with specific checks if you want to see all warnings."

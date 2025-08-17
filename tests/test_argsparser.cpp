@@ -60,8 +60,7 @@ void test_missing_value() {
 
 void test_invalid_value() {
   argsparser::Parser parser("test_app", "A test application");
-  auto* count =
-      parser.addArgument<int32_t>("count", "c", "Number of iterations");
+  parser.addArgument<int32_t>("count", "c", "Number of iterations");
 
   const char* argv[] = {"test_app", "--count", "not_a_number"};
   int argc = sizeof(argv) / sizeof(argv[0]);
@@ -243,8 +242,7 @@ void test_grouped_short_options() {
 
 void test_grouped_short_options_with_non_bool() {
   argsparser::Parser parser("test_app", "A test application");
-  auto* verbose =
-      parser.addArgument<bool>("verbose", "v", "Enable verbose output");
+  parser.addArgument<bool>("verbose", "v", "Enable verbose output");
   auto* count =
       parser.addArgument<int32_t>("count", "c", "Number of iterations");
   auto* inputFile =
