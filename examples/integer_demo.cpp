@@ -1,4 +1,4 @@
-#include <climits>
+#include <cstdint>
 #include <iostream>
 #include "argsparser.hpp"
 
@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
   auto* regular_int = parser.addArgument<int32_t>(
       "int", "i", "Regular signed integer", false, 0);
   auto* unsigned_int =
-      parser.addArgument<uint32_t>("uint", "u", "Unsigned integer", false, 0u);
+      parser.addArgument<uint32_t>("uint", "u", "Unsigned integer", false, 0U);
   auto* long_int = parser.addArgument<int64_t>(
       "long", "l", "Long signed integer", false, 0L);
   auto* unsigned_long = parser.addArgument<uint64_t>(
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (result != argsparser::ParseResult::SUCCESS) {
-    std::cerr << "Error parsing arguments!" << std::endl;
+    std::cerr << "Error parsing arguments!" << '\n';
     parser.printHelp();
     return 1;
   }
@@ -35,20 +35,17 @@ int main(int argc, char* argv[]) {
   std::cout << "Integer Types Demonstration:\n";
   std::cout << "============================\n";
 
-  std::cout << "Regular int value: " << regular_int->getValue() << std::endl;
-  std::cout << "Unsigned int value: " << unsigned_int->getValue() << std::endl;
-  std::cout << "Long value: " << long_int->getValue() << std::endl;
-  std::cout << "Unsigned long value: " << unsigned_long->getValue()
-            << std::endl;
+  std::cout << "Regular int value: " << regular_int->getValue() << '\n';
+  std::cout << "Unsigned int value: " << unsigned_int->getValue() << '\n';
+  std::cout << "Long value: " << long_int->getValue() << '\n';
+  std::cout << "Unsigned long value: " << unsigned_long->getValue() << '\n';
 
   std::cout << "\nType Ranges:\n";
   std::cout << "============\n";
-  std::cout << "int32_t range: " << INT32_MIN << " to " << INT32_MAX
-            << std::endl;
-  std::cout << "uint32_t range: 0 to " << UINT32_MAX << std::endl;
-  std::cout << "int64_t range: " << INT64_MIN << " to " << INT64_MAX
-            << std::endl;
-  std::cout << "uint64_t range: 0 to " << UINT64_MAX << std::endl;
+  std::cout << "int32_t range: " << INT32_MIN << " to " << INT32_MAX << '\n';
+  std::cout << "uint32_t range: 0 to " << UINT32_MAX << '\n';
+  std::cout << "int64_t range: " << INT64_MIN << " to " << INT64_MAX << '\n';
+  std::cout << "uint64_t range: 0 to " << UINT64_MAX << '\n';
 
   return 0;
 }
