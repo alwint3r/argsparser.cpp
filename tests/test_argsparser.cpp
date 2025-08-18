@@ -5,6 +5,8 @@
 
 #include "argsparser.hpp"
 
+// NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast)
+namespace {
 void test_basic_parsing() {
   argsparser::Parser parser("test_app", "A test application");
 
@@ -16,7 +18,7 @@ void test_basic_parsing() {
                                             "Number of iterations", false, 10);
 
   const char* argv[] = {"test_app", "--input", "test.txt", "-v", "-c", "5"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::SUCCESS);
@@ -37,7 +39,7 @@ void test_help_request() {
   parser.addArgument<bool>("verbose", "v", "Enable verbose output");
 
   const char* argv[] = {"test_app", "--help"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::HELP_REQUESTED);
@@ -50,7 +52,7 @@ void test_missing_value() {
   parser.addArgument<std::string>("input", "i", "Input file path");
 
   const char* argv[] = {"test_app", "--input"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::MISSING_VALUE);
@@ -64,7 +66,7 @@ void test_invalid_value() {
   parser.addArgument<int32_t>("count", "c", "Number of iterations");
 
   const char* argv[] = {"test_app", "--count", "not_a_number"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::INVALID_VALUE);
@@ -81,7 +83,7 @@ void test_validator() {
   count->setValidator([](int32_t value) { return value > 0; });
 
   const char* argv[] = {"test_app", "--count", "-5"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::INVALID_VALUE);
@@ -94,12 +96,13 @@ void test_print_help() {
   parser.addArgument<bool>("verbose", "v", "Enable verbose output");
   parser.addArgument<std::string>("input", "i", "Input file path", true,
                                   "default.txt");
+  // NOLINTNEXTLINEcppcoreguidelines-avoid-magic-numbers,readability-magic-numbers
   parser.addArgument<int32_t>("count", "c", "Number of iterations", false, 10);
 
   std::ostringstream oss;
   parser.printHelp(oss);
 
-  std::string helpOutput = oss.str();
+  const std::string helpOutput = oss.str();
   assert(helpOutput.find("Usage: test_app") != std::string::npos);
   assert(helpOutput.find("Enable verbose output") != std::string::npos);
   assert(helpOutput.find("Input file path") != std::string::npos);
@@ -113,7 +116,7 @@ void test_unknown_option() {
   parser.addArgument<bool>("verbose", "v", "Enable verbose output");
 
   const char* argv[] = {"test_app", "--unknown"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::UNKNOWN_OPTION);
@@ -127,7 +130,7 @@ void test_missing_required_option() {
   parser.addArgument<std::string>("input", "i", "Input file path", true);
 
   const char* argv[] = {"test_app"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::MISSING_VALUE);
@@ -144,7 +147,7 @@ void test_equals_syntax() {
                                             "Number of iterations", false, 10);
 
   const char* argv[] = {"test_app", "--input=test.txt", "--count=5"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::SUCCESS);
@@ -168,7 +171,7 @@ void test_positional_arguments() {
                                             "Number of iterations", false, 10);
 
   const char* argv[] = {"test_app", "input.txt", "output.txt", "--count=5"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::SUCCESS);
@@ -189,7 +192,7 @@ void test_missing_positional_argument() {
   parser.addPositionalArgument<std::string>("input", "Input file path");
 
   const char* argv[] = {"test_app"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::MISSING_VALUE);
@@ -204,7 +207,7 @@ void test_too_many_positional_arguments() {
   parser.addPositionalArgument<std::string>("input", "Input file path");
 
   const char* argv[] = {"test_app", "input.txt", "extra.txt"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::INVALID_VALUE);
@@ -223,7 +226,7 @@ void test_grouped_short_options() {
       parser.addArgument<std::string>("input", "i", "Input file path", true);
 
   const char* argv[] = {"test_app", "-vdq", "--input", "test.txt"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::SUCCESS);
@@ -251,7 +254,7 @@ void test_grouped_short_options_with_non_bool() {
 
   // This should be treated as -c with value 123
   const char* argv[] = {"test_app", "-c123", "--input", "test.txt"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::SUCCESS);
@@ -264,6 +267,7 @@ void test_grouped_short_options_with_non_bool() {
 
   std::cout << "test_grouped_short_options_with_non_bool passed\n";
 }
+}  // namespace
 
 int main() {
   test_basic_parsing();
@@ -284,3 +288,5 @@ int main() {
   std::cout << "All tests passed!\n";
   return 0;
 }
+
+// NOLINTEND(cppcoreguidelines-pro-type-const-cast)

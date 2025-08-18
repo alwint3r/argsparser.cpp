@@ -1,20 +1,21 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
-#include <limits>
 #include <sstream>
 
 #include "argsparser.hpp"
 
+// NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast)
+namespace {
 void test_float_parsing() {
   argsparser::Parser parser("test_app", "A test application");
 
   auto* rate =
-      parser.addArgument<float>("rate", "r", "Rate value", false, 1.5f);
+      parser.addArgument<float>("rate", "r", "Rate value", false, 1.5F);
   auto* factor = parser.addArgument<float>("factor", "f", "Factor value", true);
 
   const char* argv[] = {"test_app", "--rate", "3.14", "--factor", "2.718"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::SUCCESS);
@@ -22,8 +23,8 @@ void test_float_parsing() {
   assert(parser.isSet("rate"));
   assert(parser.isSet("factor"));
 
-  assert(std::abs(rate->getValue() - 3.14f) < 1e-6f);
-  assert(std::abs(factor->getValue() - 2.718f) < 1e-6f);
+  assert(std::abs(rate->getValue() - 3.14F) < 1e-6F);
+  assert(std::abs(factor->getValue() - 2.718F) < 1e-6F);
 
   std::cout << "test_float_parsing passed\n";
 }
@@ -37,7 +38,7 @@ void test_double_parsing() {
 
   const char* argv[] = {"test_app", "--precision", "1e-15", "--pi",
                         "3.141592653589793"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::SUCCESS);
@@ -58,13 +59,13 @@ void test_float_negative_values() {
       parser.addArgument<float>("temp", "t", "Temperature", true);
 
   const char* argv[] = {"test_app", "--temp", "-273.15"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::SUCCESS);
 
   assert(parser.isSet("temp"));
-  assert(std::abs(temperature->getValue() - (-273.15f)) < 1e-5f);
+  assert(std::abs(temperature->getValue() - (-273.15F)) < 1e-5F);
 
   std::cout << "test_float_negative_values passed\n";
 }
@@ -77,7 +78,7 @@ void test_float_scientific_notation() {
 
   const char* argv[] = {"test_app", "--small", "1.23e-10", "--large",
                         "4.56E+20"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::SUCCESS);
@@ -94,18 +95,18 @@ void test_float_scientific_notation() {
 void test_float_invalid_values() {
   argsparser::Parser parser("test_app", "A test application");
 
-  auto* value = parser.addArgument<float>("value", "v", "Float value", true);
+  parser.addArgument<float>("value", "v", "Float value", true);
 
   // Test invalid string
   const char* argv1[] = {"test_app", "--value", "not_a_number"};
-  int argc1 = sizeof(argv1) / sizeof(argv1[0]);
+  const int argc1 = sizeof(argv1) / sizeof(argv1[0]);
 
   auto result1 = parser.parse(argc1, const_cast<char**>(argv1));
   assert(result1 == argsparser::ParseResult::INVALID_VALUE);
 
   // Test partially invalid string
   const char* argv2[] = {"test_app", "--value", "3.14abc"};
-  int argc2 = sizeof(argv2) / sizeof(argv2[0]);
+  const int argc2 = sizeof(argv2) / sizeof(argv2[0]);
 
   auto result2 = parser.parse(argc2, const_cast<char**>(argv2));
   assert(result2 == argsparser::ParseResult::INVALID_VALUE);
@@ -121,26 +122,26 @@ void test_float_validator() {
 
   // Set validator to ensure percentage is between 0 and 100
   percentage->setValidator(
-      [](float value) { return value >= 0.0f && value <= 100.0f; });
+      [](float value) { return value >= 0.0F && value <= 100.0F; });
 
   // Test valid percentage
   const char* argv1[] = {"test_app", "--percent", "85.5"};
-  int argc1 = sizeof(argv1) / sizeof(argv1[0]);
+  const int argc1 = sizeof(argv1) / sizeof(argv1[0]);
 
   auto result1 = parser.parse(argc1, const_cast<char**>(argv1));
   assert(result1 == argsparser::ParseResult::SUCCESS);
-  assert(std::abs(percentage->getValue() - 85.5f) < 1e-6f);
+  assert(std::abs(percentage->getValue() - 85.5F) < 1e-6F);
 
   // Test invalid percentage (too high)
   const char* argv2[] = {"test_app", "--percent", "150.0"};
-  int argc2 = sizeof(argv2) / sizeof(argv2[0]);
+  const int argc2 = sizeof(argv2) / sizeof(argv2[0]);
 
   auto result2 = parser.parse(argc2, const_cast<char**>(argv2));
   assert(result2 == argsparser::ParseResult::INVALID_VALUE);
 
   // Test invalid percentage (negative)
   const char* argv3[] = {"test_app", "--percent", "-10.0"};
-  int argc3 = sizeof(argv3) / sizeof(argv3[0]);
+  const int argc3 = sizeof(argv3) / sizeof(argv3[0]);
 
   auto result3 = parser.parse(argc3, const_cast<char**>(argv3));
   assert(result3 == argsparser::ParseResult::INVALID_VALUE);
@@ -159,7 +160,7 @@ void test_double_validator() {
 
   // Test valid threshold
   const char* argv1[] = {"test_app", "--threshold", "0.0001"};
-  int argc1 = sizeof(argv1) / sizeof(argv1[0]);
+  const int argc1 = sizeof(argv1) / sizeof(argv1[0]);
 
   auto result1 = parser.parse(argc1, const_cast<char**>(argv1));
   assert(result1 == argsparser::ParseResult::SUCCESS);
@@ -167,7 +168,7 @@ void test_double_validator() {
 
   // Test invalid threshold (zero)
   const char* argv2[] = {"test_app", "--threshold", "0.0"};
-  int argc2 = sizeof(argv2) / sizeof(argv2[0]);
+  const int argc2 = sizeof(argv2) / sizeof(argv2[0]);
 
   auto result2 = parser.parse(argc2, const_cast<char**>(argv2));
   assert(result2 == argsparser::ParseResult::INVALID_VALUE);
@@ -179,13 +180,13 @@ void test_float_default_values() {
   argsparser::Parser parser("test_app", "A test application");
 
   auto* rate =
-      parser.addArgument<float>("rate", "r", "Rate value", false, 2.5f);
+      parser.addArgument<float>("rate", "r", "Rate value", false, 2.5F);
   auto* factor =
       parser.addArgument<double>("factor", "f", "Factor value", false, 1.618);
 
   // Parse without providing values - should use defaults
   const char* argv[] = {"test_app"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::SUCCESS);
@@ -193,7 +194,7 @@ void test_float_default_values() {
   assert(!parser.isSet("rate"));
   assert(!parser.isSet("factor"));
 
-  assert(std::abs(rate->getValue() - 2.5f) < 1e-6f);
+  assert(std::abs(rate->getValue() - 2.5F) < 1e-6F);
   assert(std::abs(factor->getValue() - 1.618) < 1e-10);
 
   std::cout << "test_float_default_values passed\n";
@@ -203,13 +204,13 @@ void test_float_help_output() {
   argsparser::Parser parser("test_app", "A test application");
 
   auto* rate =
-      parser.addArgument<float>("rate", "r", "Processing rate", false, 1.5f);
+      parser.addArgument<float>("rate", "r", "Processing rate", false, 1.5F);
   auto* precision = parser.addArgument<double>("precision", "p",
                                                "Calculation precision", true);
 
   std::stringstream ss;
   rate->printHelp(ss);
-  std::string rateHelp = ss.str();
+  const std::string rateHelp = ss.str();
 
   assert(rateHelp.find("-r, --rate") != std::string::npos);
   assert(rateHelp.find("Processing rate") != std::string::npos);
@@ -219,7 +220,7 @@ void test_float_help_output() {
   ss.str("");
   ss.clear();
   precision->printHelp(ss);
-  std::string precisionHelp = ss.str();
+  const std::string precisionHelp = ss.str();
 
   assert(precisionHelp.find("-p, --precision") != std::string::npos);
   assert(precisionHelp.find("Calculation precision") != std::string::npos);
@@ -236,14 +237,14 @@ void test_mixed_types() {
   auto* inputFile =
       parser.addArgument<std::string>("input", "i", "Input file", true);
   auto* count = parser.addArgument<int>("count", "c", "Count", false, 10);
-  auto* rate = parser.addArgument<float>("rate", "r", "Rate", false, 1.0f);
+  auto* rate = parser.addArgument<float>("rate", "r", "Rate", false, 1.0F);
   auto* precision =
       parser.addArgument<double>("precision", "p", "Precision", false, 1e-6);
 
   const char* argv[] = {"test_app",    "--input", "data.txt", "--verbose",
                         "--count",     "42",      "--rate",   "3.14",
                         "--precision", "1e-12"};
-  int argc = sizeof(argv) / sizeof(argv[0]);
+  const int argc = sizeof(argv) / sizeof(argv[0]);
 
   auto result = parser.parse(argc, const_cast<char**>(argv));
   assert(result == argsparser::ParseResult::SUCCESS);
@@ -251,11 +252,12 @@ void test_mixed_types() {
   assert(verbose->getValue() == true);
   assert(inputFile->getValue() == "data.txt");
   assert(count->getValue() == 42);
-  assert(std::abs(rate->getValue() - 3.14f) < 1e-6f);
+  assert(std::abs(rate->getValue() - 3.14F) < 1e-6F);
   assert(std::abs(precision->getValue() - 1e-12) < 1e-15);
 
   std::cout << "test_mixed_types passed\n";
 }
+}  // namespace
 
 int main() {
   test_float_parsing();
@@ -272,3 +274,5 @@ int main() {
   std::cout << "All floating point tests passed!\n";
   return 0;
 }
+
+// NOLINTEND(cppcoreguidelines-pro-type-const-cast)

@@ -1,6 +1,9 @@
+#include <cstdint>
 #include <iostream>
 
 #include "argsparser.hpp"
+
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
 auto main(int argc, char* argv[]) -> int {
   argsparser::Parser parser(
@@ -19,6 +22,7 @@ auto main(int argc, char* argv[]) -> int {
                                             "Number of iterations", false, 1);
   auto* rate =
       parser.addArgument<float>("rate", "r", "Processing rate", false, 1.0F);
+
   auto* precision = parser.addArgument<double>(
       "precision", "p", "Calculation precision", false, 1e-6);
 
@@ -85,3 +89,5 @@ auto main(int argc, char* argv[]) -> int {
 
   return 0;
 }
+
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)

@@ -41,17 +41,39 @@ print_header() {
     echo "==== $1 ===="
 }
 
-# Run static analysis on header file
-print_header "Analyzing header file (argsparser.hpp)"
-clang-tidy -p build ../include/argsparser.hpp ${EXTRA_ARGS} 2>&1 | head -100
 
-# # Run static analysis on key test files
-# print_header "Analyzing test files (test_argsparser.cpp)"
-# clang-tidy -p build ../tests/test_argsparser.cpp ${EXTRA_ARGS} 2>&1 | head -100
+# Discover and analyze header files
+print_header "Analyzing header files (*.hpp)"
+if [ -d ../include ]; then
+    find ../include -type f -name '*.hpp' -print0 | while IFS= read -r -d '' file; do
+        echo "--> $(basename "$file")"
+        clang-tidy -p build "$file" ${EXTRA_ARGS} 2>&1 | head -100
+    done
+else
+    echo "(No include directory found)"
+fi
 
-# # Run static analysis on example files
-# print_header "Analyzing example files (example.cpp)"
-# clang-tidy -p build ../examples/example.cpp ${EXTRA_ARGS} 2>&1 | head -100
+# Discover and analyze test source files
+print_header "Analyzing test sources (tests/*.cpp)"
+if [ -d ../tests ]; then
+    find ../tests -type f -name '*.cpp' -print0 | while IFS= read -r -d '' file; do
+        echo "--> $(basename "$file")"
+        clang-tidy -p build "$file" ${EXTRA_ARGS} 2>&1 | head -100
+    done
+else
+    echo "(No tests directory found)"
+fi
+
+# Discover and analyze example source files
+print_header "Analyzing example sources (examples/*.cpp)"
+if [ -d ../examples ]; then
+    find ../examples -type f -name '*.cpp' -print0 | while IFS= read -r -d '' file; do
+        echo "--> $(basename "$file")"
+        clang-tidy -p build "$file" ${EXTRA_ARGS} 2>&1 | head -100
+    done
+else
+    echo "(No examples directory found)"
+fi
 
 echo "==== Focused static analysis complete! ===="
 echo "Note: Only showing first 100 warnings from each file."

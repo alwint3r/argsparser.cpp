@@ -10,13 +10,22 @@ Checks: >
   readability-*,
   performance-*,
   modernize-*,
+  google-explicit-constructors,
+  google-global-names-in-headers,
+  google-build-using-namespace,
   -cppcoreguidelines-non-private-member-variables-in-classes,
   -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-avoid-magic-numbers,
   -hicpp-vararg,
+  -hicpp-avoid-c-arrays,
   -readability-identifier-length,
   -readability-else-after-return,
+  -readability-magic-numbers,
   -misc-non-private-member-variables-in-classes,
   -modernize-use-trailing-return-type,
-  -modernize-pass-by-value
+  -modernize-pass-by-value,
+  -modernize-avoid-c-arrays,
+  -bugprone-exception-escape,
 FormatStyle: file
 HeaderFilterRegex: '.*'
